@@ -1,4 +1,4 @@
-CREATE TABLE measurements (
+CREATE TABLE measurement (
     "time" timestamptz NOT NULL,
     weight numeric(5, 2) NOT NULL,
     height numeric(4, 1) NOT NULL,
@@ -9,5 +9,5 @@ CREATE TABLE measurements (
     metabolism numeric(5, 1) NULL,
     muscle_rate numeric(4, 2) NULL,
     visceral_fat numeric(3, 1) NULL,
-    CONSTRAINT measurements_pk PRIMARY KEY ("time")
+    CONSTRAINT measurement_pk PRIMARY KEY ("time")
 );
