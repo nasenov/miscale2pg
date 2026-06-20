@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
 plugins {
 	java
 	id("org.springframework.boot") version "4.1.0"
@@ -35,4 +37,9 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
+	imageName.set("ghcr.io/nasenov/${project.name}")
+	tags.set(listOf("${imageName.get()}:${project.version}"))
 }
