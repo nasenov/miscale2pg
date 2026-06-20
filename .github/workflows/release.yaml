@@ -6,11 +6,10 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'release' }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -40,5 +39,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release
-        # run: ./gradlew bootBuildImage --publishImage
-        run: ./gradlew bootBuildImage
+        run: ./gradlew bootBuildImage --publishImage
