@@ -39,4 +39,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release
-        run: ./gradlew bootBuildImage --publishImage
+        run: ./gradlew bootBuildImage --publishImage --no-daemon
