@@ -4,9 +4,8 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.graalvm.buildtools.native") version "1.1.2"
 }
-
-apply(plugin = "org.springframework.boot.aot")
 
 group = "dev.nasenov"
 version = "0.0.6" // x-release-please-version
@@ -47,5 +46,4 @@ tasks.named<BootBuildImage>("bootBuildImage") {
 	imageName.set("ghcr.io/nasenov/${project.name}")
 	tags.set(listOf("${imageName.get()}:${project.version}"))
 	environment.put("BP_OCI_SOURCE", "https://github.com/nasenov/${project.name}")
-	environment.put("BP_SPRING_AOT_ENABLED", "true")
 }
