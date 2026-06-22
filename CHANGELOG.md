@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/nasenov/miscale2pg/compare/0.0.5...0.0.6) (2026-06-22)
+
+
+### Bug Fixes
+
+* enable spring aot during OCI image build ([af53319](https://github.com/nasenov/miscale2pg/commit/af5331979887823bdef96ad797f2ef1e58efd8cc))
+
 ## [0.0.5](https://github.com/nasenov/miscale2pg/compare/0.0.4...0.0.5) (2026-06-22)
 
 
