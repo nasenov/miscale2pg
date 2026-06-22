@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/nasenov/miscale2pg/compare/0.0.6...0.0.7) (2026-06-22)
+
+
+### Performance Improvements
+
+* use graalvm native image ([ebc84d7](https://github.com/nasenov/miscale2pg/commit/ebc84d778887fd2e7cc1f7bdd422f8714c13cc08))
+
 ## [0.0.6](https://github.com/nasenov/miscale2pg/compare/0.0.5...0.0.6) (2026-06-22)
 
 
