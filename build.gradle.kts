@@ -47,4 +47,5 @@ tasks.named<BootBuildImage>("bootBuildImage") {
 	imageName.set("ghcr.io/nasenov/${project.name}")
 	tags.set(listOf("${imageName.get()}:${project.version}"))
 	environment.put("BP_OCI_SOURCE", "https://github.com/nasenov/${project.name}")
+	environment.put("BP_SPRING_AOT_ENABLED", "true")
 }
