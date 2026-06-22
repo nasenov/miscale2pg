@@ -9,7 +9,7 @@ plugins {
 apply(plugin = "org.springframework.boot.aot")
 
 group = "dev.nasenov"
-version = "0.0.5" // x-release-please-version
+version = "0.0.6" // x-release-please-version
 
 java {
 	toolchain {
