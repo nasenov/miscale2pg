@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.4](https://github.com/nasenov/miscale2pg/compare/0.0.3...0.0.4) (2026-06-22)
+
+
+### Performance Improvements
+
+* use spring-data-jdbc instead of spring-data-jpa ([d0df2dc](https://github.com/nasenov/miscale2pg/commit/d0df2dcb874027559e3aa74b5129c3a8a885a31e))
+
+
+### Miscellaneous Chores
+
+* auto update version with release-please ([2d6fd4e](https://github.com/nasenov/miscale2pg/commit/2d6fd4e64bc58b2208120f290023c1b4f89533d5))
+* let renovate find changelog ([429f4d6](https://github.com/nasenov/miscale2pg/commit/429f4d6e55ea8db21972b958986c857506da021d))
+
 ## [0.0.3](https://github.com/nasenov/miscale2pg/compare/0.0.2...0.0.3) (2026-06-21)
 
 
