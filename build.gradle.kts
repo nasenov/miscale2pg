@@ -6,6 +6,8 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
+apply(plugin = "org.springframework.boot.aot")
+
 group = "dev.nasenov"
 version = "0.0.4" // x-release-please-version
 
