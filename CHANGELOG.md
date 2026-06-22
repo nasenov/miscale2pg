@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/nasenov/miscale2pg/compare/0.0.4...0.0.5) (2026-06-22)
+
+
+### Performance Improvements
+
+* enable spring aot ([914af27](https://github.com/nasenov/miscale2pg/commit/914af2714eaae08891c0963003cc76279540f93f))
+
 ## [0.0.4](https://github.com/nasenov/miscale2pg/compare/0.0.3...0.0.4) (2026-06-22)
 
 
