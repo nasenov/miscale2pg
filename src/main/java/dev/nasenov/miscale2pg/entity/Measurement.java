@@ -1,17 +1,21 @@
 package dev.nasenov.miscale2pg.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 
-@Entity
+@Table
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Measurement {
+public class Measurement implements Persistable<Instant> {
 
     @Id
     private Instant time;
@@ -33,4 +37,15 @@ public class Measurement {
     private Double muscleRate;
 
     private Double visceralFat;
+
+    @Override
+    public Instant getId() {
+        return time;
+    }
+
+    @Override
+    public boolean isNew() {
+        return true;
+    }
+
 }
