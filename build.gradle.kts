@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "dev.nasenov"
-version = "0.0.6" // x-release-please-version
+version = "0.0.7" // x-release-please-version
 
 java {
 	toolchain {
