@@ -11,5 +11,6 @@
     ":dependencyDashboard",
     ":timezone(Europe/Sofia)"
   ],
+  "allowedUnsafeExecutions": ["gradleWrapper"],
   "dependencyDashboardTitle": "Renovate Dashboard"
 }
