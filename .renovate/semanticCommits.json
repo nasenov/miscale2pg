@@ -33,6 +33,12 @@
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}",
       "commitMessagePrefix": "{{semanticCommitType}}({{semanticCommitScope}}):"
+    },
+    {
+      "matchManagers": ["gradle-wrapper"],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "gradle",
+      "commitMessagePrefix": "{{semanticCommitType}}({{semanticCommitScope}}):"
     }
   ]
 }
