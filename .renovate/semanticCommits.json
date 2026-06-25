@@ -38,6 +38,7 @@
       "matchManagers": ["gradle-wrapper"],
       "semanticCommitType": "build",
       "semanticCommitScope": "gradle",
+      "commitMessageTopic": "{{depName}}",
       "commitMessagePrefix": "{{semanticCommitType}}({{semanticCommitScope}}):"
     }
   ]
