@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Miscale2pgApplication {
+public class MiScale2PGApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Miscale2pgApplication.class, args);
+	static void main(String[] args) {
+		SpringApplication.run(MiScale2PGApplication.class, args);
 	}
 
 }
