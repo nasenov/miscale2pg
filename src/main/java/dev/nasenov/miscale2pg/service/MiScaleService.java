@@ -4,41 +4,27 @@ import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.entity.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import tools.jackson.databind.MappingIterator;
-import tools.jackson.databind.ObjectReader;
 
-import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MiScaleService {
 
-    private final ObjectReader miScaleMeasurementsReader;
-
     private final MeasurementRepository measurementRepository;
 
-    public void parseMiScaleCSV(MultipartFile file) {
-        try {
-            MappingIterator<MiScaleMeasurement> iterator = miScaleMeasurementsReader.readValues(file.getInputStream());
+    public void save(Collection<MiScaleMeasurement> miScaleMeasurements) {
+        List<Measurement> measurements = miScaleMeasurements
+                .stream()
+                .map(MiScaleService::convert)
+                .toList();
 
-            List<Measurement> measurements = iterator.readAll()
-                    .stream()
-                    .map(this::convertDtoToEntity)
-                    .toList();
-
-            measurementRepository.saveAll(measurements);
-        } catch (IOException e) {
-            log.error("Could not parse CSV file: {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        measurementRepository.saveAll(measurements);
     }
 
-    private Measurement convertDtoToEntity(MiScaleMeasurement miScaleMeasurement) {
+    private static Measurement convert(MiScaleMeasurement miScaleMeasurement) {
         return Measurement.builder()
                 .time(miScaleMeasurement.time())
                 .weight(miScaleMeasurement.weight())
