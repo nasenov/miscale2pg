@@ -39,18 +39,18 @@ public class MiScaleService {
     }
 
     private Measurement convertDtoToEntity(MiScaleMeasurement miScaleMeasurement) {
-        return new Measurement(
-          miScaleMeasurement.time(),
-          miScaleMeasurement.weight(),
-          miScaleMeasurement.height(),
-          miScaleMeasurement.bmi(),
-          miScaleMeasurement.fatRate(),
-          miScaleMeasurement.bodyWaterRate(),
-          miScaleMeasurement.boneMass(),
-          miScaleMeasurement.metabolism(),
-          miScaleMeasurement.muscleRate(),
-          miScaleMeasurement.visceralFat()
-        );
+        return Measurement.builder()
+                .time(miScaleMeasurement.time())
+                .weight(miScaleMeasurement.weight())
+                .height(miScaleMeasurement.height())
+                .bmi(miScaleMeasurement.bmi())
+                .fatRate(miScaleMeasurement.fatRate())
+                .bodyWaterRate(miScaleMeasurement.bodyWaterRate())
+                .boneMass(miScaleMeasurement.boneMass())
+                .metabolism(miScaleMeasurement.metabolism())
+                .muscleRate(miScaleMeasurement.muscleRate())
+                .visceralFat(miScaleMeasurement.visceralFat())
+                .build();
     }
 
 }
