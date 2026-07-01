@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.0.8](https://github.com/nasenov/miscale2pg/compare/0.0.7...0.0.8) (2026-07-01)
+
+
+### Features
+
+* enable problem details response for bad requests ([68513b1](https://github.com/nasenov/miscale2pg/commit/68513b10a02f7ae3898948827a0f74f78dc8d4a8))
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.2 ➔ 1.1.3) ([#20](https://github.com/nasenov/miscale2pg/issues/20)) ([b1d4bda](https://github.com/nasenov/miscale2pg/commit/b1d4bdaafda0e5552c24ad6455680b2c8f0163df))
+
+
+### Miscellaneous Chores
+
+* fix typo ([15df6ea](https://github.com/nasenov/miscale2pg/commit/15df6eaf87358ca2aa3b139d7612276fbbe095fc))
+
+
+### Code Refactoring
+
+* read csv file in controller ([ba2c71d](https://github.com/nasenov/miscale2pg/commit/ba2c71d395bda1b0b7a6a12a9a4acbb64518f185))
+
 ## [0.0.7](https://github.com/nasenov/miscale2pg/compare/0.0.6...0.0.7) (2026-06-22)
 
 
