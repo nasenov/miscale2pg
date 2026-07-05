@@ -35,4 +35,19 @@ class MiScaleControllerTest {
             .containsExactly(HttpStatus.BAD_REQUEST.value(), "Required part 'file' is not present.");
     }
 
+    @Test
+    void shouldReturnBadRequestWhenEmptyFileIsUploaded() {
+        mockMvcTester.post()
+                .uri("/api/measurements")
+                .multipart()
+                .file("file", "".getBytes())
+                .exchange()
+                .assertThat()
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .convertTo(ProblemDetail.class)
+                .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
+                .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be read.");
+    }
+
 }

@@ -5,16 +5,15 @@ import dev.nasenov.miscale2pg.service.MiScaleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.MappingIterator;
 import tools.jackson.databind.ObjectReader;
+import tools.jackson.dataformat.csv.CsvReadException;
 
 import java.io.IOException;
-import java.util.Collection;
 
 @Slf4j
 @RestController
@@ -27,17 +26,20 @@ public class MiScaleController {
     private final MiScaleService miScaleService;
 
     @PostMapping
-    public ResponseEntity<Void> upload(@RequestParam MultipartFile file) {
-        try {
-            Collection<MiScaleMeasurement> miScaleMeasurements = miScaleMeasurementReader.<MiScaleMeasurement>readValues(file.getInputStream()).readAll();
-
-            miScaleService.save(miScaleMeasurements);
+    public ResponseEntity<Void> upload(@RequestParam MultipartFile file) throws IOException {
+        try (MappingIterator<MiScaleMeasurement> iterator = miScaleMeasurementReader.readValues(file.getBytes())) {
+            miScaleService.save(iterator.readAll());
 
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (IOException e) {
-            log.error("Could not parse CSV file: {}", e.getMessage());
-            throw new RuntimeException(e);
         }
     }
+
+    @ExceptionHandler(CsvReadException.class)
+    public ResponseEntity<ProblemDetail> handleCsvReadException(CsvReadException ex) {
+        log.error("Failed to read CSV file", ex);
+        return ResponseEntity.badRequest()
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be read."));
+    }
+
 
 }
