@@ -1,7 +1,6 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

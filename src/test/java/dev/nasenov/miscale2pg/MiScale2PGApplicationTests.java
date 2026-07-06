@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -95,6 +97,31 @@ class MiScale2PGApplicationTests {
 					.get()
 					.usingRecursiveComparison()
 					.isEqualTo(measurement));
+	}
+
+	@Test
+	void shouldReturnContentTooLargeWhenCsvFileGreaterThanMaxFileSizeIsUploaded() {
+		byte[] csv = new byte[2 * 1024 * 1024]; // 2 MiB
+
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("file", new ByteArrayResource(csv) {
+			@Override
+			public String getFilename() {
+				return "measurements.csv";
+			}
+		});
+
+		restTestClient.post()
+				.uri("/api/measurements")
+				.body(body)
+				.exchange()
+				.expectStatus().isEqualTo(HttpStatus.CONTENT_TOO_LARGE)
+				.expectBody(ProblemDetail.class)
+				.value(response -> {
+					assertThat(response).isNotNull();
+					assertThat(response.getStatus()).isEqualTo(HttpStatus.CONTENT_TOO_LARGE.value());
+					assertThat(response.getDetail()).isEqualTo("Maximum upload size exceeded");
+				});
 	}
 
 }
