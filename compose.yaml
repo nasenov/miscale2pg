@@ -1,7 +1,25 @@
 services:
   database:
+    container_name: postgres
     image: postgres:18.4
+    restart: unless-stopped
+    healthcheck:
+      test: pg_isready
+      start_period: 30s
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
+
+  miscale2pg:
+    container_name: miscale2pg
+    image: ghcr.io/nasenov/miscale2pg:latest
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+    ports:
+      - "8080:8080"

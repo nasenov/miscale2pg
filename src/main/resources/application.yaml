@@ -2,11 +2,6 @@ spring:
   application:
     name: miscale2pg
 
-  docker:
-    compose:
-      stop:
-        command: down
-
   mvc:
     problemdetails:
       enabled: true
