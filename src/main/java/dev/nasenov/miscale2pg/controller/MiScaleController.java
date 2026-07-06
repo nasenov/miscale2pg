@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.dataformat.csv.CsvReadException;
 
 import java.io.IOException;
@@ -41,5 +42,11 @@ public class MiScaleController {
                 .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be read."));
     }
 
+    @ExceptionHandler(MismatchedInputException.class)
+    public ResponseEntity<ProblemDetail> handleMismatchedInputException(MismatchedInputException ex) {
+        log.error("Failed to parse CSV file", ex);
+        return ResponseEntity.badRequest()
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be parsed."));
+    }
 
 }

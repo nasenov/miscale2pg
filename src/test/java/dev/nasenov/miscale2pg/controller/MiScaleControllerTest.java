@@ -1,6 +1,7 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,26 @@ class MiScaleControllerTest {
                 .convertTo(ProblemDetail.class)
                 .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
                 .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be read.");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenNonCsvFileIsUploaded() {
+        String text = """
+                Lorem ipsum dolor sit amet consectetur adipiscing elit.
+                Dolor sit amet consectetur adipiscing elit quisque faucibus.
+                """;
+
+        mockMvcTester.post()
+                .uri("/api/measurements")
+                .multipart()
+                .file("file", text.getBytes())
+                .exchange()
+                .assertThat()
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .convertTo(ProblemDetail.class)
+                .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
+                .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
     }
 
 }
