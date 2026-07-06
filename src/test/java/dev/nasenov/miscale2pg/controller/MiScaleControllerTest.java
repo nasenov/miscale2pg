@@ -70,4 +70,24 @@ class MiScaleControllerTest {
                 .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
     }
 
+    @Test
+    void shouldReturnBadRequestWhenWrongCsvFileIsUploaded() {
+        String csv = """
+                id,name,age
+                1,John Doe,28
+                """;
+
+        mockMvcTester.post()
+                .uri("/api/measurements")
+                .multipart()
+                .file("file", csv.getBytes())
+                .exchange()
+                .assertThat()
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .convertTo(ProblemDetail.class)
+                .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
+                .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
+    }
+
 }
