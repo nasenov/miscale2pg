@@ -15,13 +15,15 @@ public class MiScaleService {
 
     private final MeasurementRepository measurementRepository;
 
-    public void save(Collection<MiScaleMeasurement> miScaleMeasurements) {
+    public int save(Collection<MiScaleMeasurement> miScaleMeasurements) {
         List<Measurement> measurements = miScaleMeasurements
                 .stream()
                 .map(MiScaleService::convert)
                 .toList();
 
         measurementRepository.saveAll(measurements);
+
+        return measurements.size();
     }
 
     private static Measurement convert(MiScaleMeasurement miScaleMeasurement) {

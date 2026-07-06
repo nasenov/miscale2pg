@@ -1,8 +1,10 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
+import dev.nasenov.miscale2pg.dto.UploadResponse;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -10,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+
+import java.util.List;
 
 @WebMvcTest
 @Import(value = JacksonConfiguration.class)
@@ -88,6 +92,25 @@ class MiScaleControllerTest {
                 .convertTo(ProblemDetail.class)
                 .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
                 .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
+    }
+
+    @Test
+    void shouldReturnOKWhenHeadersOnlyCsvFileIsUploaded() {
+        String csv = "time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat";
+
+        Mockito.when(miScaleService.save(List.of())).thenReturn(0);
+
+        mockMvcTester.post()
+                .uri("/api/measurements")
+                .multipart()
+                .file("file", csv.getBytes())
+                .exchange()
+                .assertThat()
+                .hasStatus(HttpStatus.OK)
+                .bodyJson()
+                .convertTo(UploadResponse.class)
+                .extracting(UploadResponse::total, UploadResponse::saved)
+                .containsExactly(0, 0);
     }
 
 }

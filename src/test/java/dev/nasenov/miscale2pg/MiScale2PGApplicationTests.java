@@ -1,5 +1,6 @@
 package dev.nasenov.miscale2pg;
 
+import dev.nasenov.miscale2pg.dto.UploadResponse;
 import dev.nasenov.miscale2pg.entity.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,8 @@ class MiScale2PGApplicationTests {
 				.body(body)
 				.exchange()
 				.expectStatus().isCreated()
-				.expectBody().isEmpty();
+				.expectBody(UploadResponse.class)
+				.isEqualTo(new UploadResponse(2, 2));
 
 		Measurement completeMeasurement = Measurement.builder()
 				.time(Instant.parse("2026-06-23T07:35:53Z"))

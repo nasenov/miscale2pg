@@ -1,6 +1,7 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
+import dev.nasenov.miscale2pg.dto.UploadResponse;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.dataformat.csv.CsvReadException;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,11 +29,14 @@ public class MiScaleController {
     private final MiScaleService miScaleService;
 
     @PostMapping
-    public ResponseEntity<Void> upload(@RequestParam MultipartFile file) throws IOException {
+    public ResponseEntity<UploadResponse> upload(@RequestParam MultipartFile file) throws IOException {
         try (MappingIterator<MiScaleMeasurement> iterator = miScaleMeasurementReader.readValues(file.getBytes())) {
-            miScaleService.save(iterator.readAll());
+            List<MiScaleMeasurement> measurements = iterator.readAll();
 
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            int saved = miScaleService.save(measurements);
+
+            return ResponseEntity.status(saved != 0 ? HttpStatus.CREATED : HttpStatus.OK)
+                    .body(new UploadResponse(measurements.size(), saved));
         }
     }
 
