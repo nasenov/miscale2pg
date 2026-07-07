@@ -6,6 +6,10 @@ spring:
     problemdetails:
       enabled: true
 
+  threads:
+    virtual:
+      enabled: true
+
 management:
   endpoints:
     web:
