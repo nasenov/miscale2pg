@@ -31,12 +31,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Java
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@8c5543b71f44568342e106336639979e94a8f6de # v1.6.1
         with:
           java-version: "25"
-          distribution: temurin
+          distribution: graalvm-community
           cache: gradle
 
       - name: Run Tests
         run: ./gradlew test --no-daemon
+
+      - name: Run Native Tests
+        run: ./gradlew nativeTest --no-daemon
