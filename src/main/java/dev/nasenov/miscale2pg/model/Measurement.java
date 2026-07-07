@@ -1,11 +1,11 @@
-package dev.nasenov.miscale2pg.dto;
+package dev.nasenov.miscale2pg.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
 
 import java.time.OffsetDateTime;
 
-public record MiScaleMeasurement(
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ssXX")
+@Builder
+public record Measurement(
         OffsetDateTime time,
         double weight,
         double height,

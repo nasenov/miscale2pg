@@ -1,7 +1,7 @@
 package dev.nasenov.miscale2pg.service;
 
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
-import dev.nasenov.miscale2pg.entity.Measurement;
+import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

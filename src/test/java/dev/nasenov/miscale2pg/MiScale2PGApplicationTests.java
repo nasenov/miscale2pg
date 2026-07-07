@@ -1,7 +1,7 @@
 package dev.nasenov.miscale2pg;
 
 import dev.nasenov.miscale2pg.dto.UploadResponse;
-import dev.nasenov.miscale2pg.entity.Measurement;
+import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.util.MultiValueMap;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +74,7 @@ class MiScale2PGApplicationTests {
 				.isEqualTo(new UploadResponse(2, 2));
 
 		Measurement completeMeasurement = Measurement.builder()
-				.time(Instant.parse("2026-06-23T07:35:53Z"))
+				.time(OffsetDateTime.parse("2026-06-23T07:35:53Z"))
 				.weight(67.8)
 				.height(180.0)
 				.bmi(20.9)
@@ -87,14 +87,14 @@ class MiScale2PGApplicationTests {
 				.build();
 
 		Measurement partialMeasurement = Measurement.builder()
-				.time(Instant.parse("2026-06-24T04:33:57Z"))
+				.time(OffsetDateTime.parse("2026-06-24T04:33:57Z"))
 				.weight(68.2)
 				.height(180.0)
 				.bmi(21.0)
 				.build();
 
 		Stream.of(completeMeasurement, partialMeasurement)
-			.forEach(measurement -> assertThat(measurementRepository.findById(measurement.getTime()))
+			.forEach(measurement -> assertThat(measurementRepository.findById(measurement.time()))
 					.isPresent()
 					.get()
 					.usingRecursiveComparison()
