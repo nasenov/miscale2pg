@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.9](https://github.com/nasenov/miscale2pg/compare/0.0.8...0.0.9) (2026-07-07)
+
+
+### Performance Improvements
+
+* enable virtual threads ([5863947](https://github.com/nasenov/miscale2pg/commit/5863947d45bff053985d03f8b9d5b7daebb35cd1))
+
+
+### Miscellaneous Chores
+
+* fix warning ([e66b02a](https://github.com/nasenov/miscale2pg/commit/e66b02aa82b6ea04aea020b640e64b166d9ba15a))
+
+
+### Code Refactoring
+
+* use spring boot starter jdbc ([8a5d97f](https://github.com/nasenov/miscale2pg/commit/8a5d97f773b4b7f4bd59a0cf196d010e5ce7862b))
+
 ## [0.0.8](https://github.com/nasenov/miscale2pg/compare/0.0.7...0.0.8) (2026-07-06)
 
 
