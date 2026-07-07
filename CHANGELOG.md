@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/nasenov/miscale2pg/compare/0.0.9...0.0.10) (2026-07-07)
+
+
+### Bug Fixes
+
+* add native hint for measurement model ([fe995e7](https://github.com/nasenov/miscale2pg/commit/fe995e79b52a5a2b9399cbbd4f5b9698b639823a))
+
 ## [0.0.9](https://github.com/nasenov/miscale2pg/compare/0.0.8...0.0.9) (2026-07-07)
 
 
