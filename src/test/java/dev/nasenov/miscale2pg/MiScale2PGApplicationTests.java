@@ -96,6 +96,50 @@ class MiScale2PGApplicationTests {
 	}
 
 	@Test
+	void shouldSaveMeasurementsWhenCsvWithDuplicatesIsUploaded() {
+		String csv = """
+				time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
+				2026-06-24 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
+				2026-06-24 04:33:57+0000,67.8,180.0,20.9,14.422834,58.705936,2.9538348,1516.0,55.067486,6.0
+				""";
+
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("file", new ByteArrayResource(csv.getBytes()) {
+			@Override
+			public String getFilename() {
+				return "measurements.csv";
+			}
+		});
+
+		restTestClient.post()
+				.uri("/api/measurements")
+				.body(body)
+				.exchange()
+				.expectStatus().isCreated()
+				.expectBody(UploadResponse.class)
+				.isEqualTo(new UploadResponse(2, 2));
+
+		Measurement measurement = Measurement.builder()
+				.time(OffsetDateTime.parse("2026-06-24T04:33:57Z"))
+				.weight(67.8)
+				.height(180.0)
+				.bmi(20.9)
+				.fatRate(14.42)
+				.bodyWaterRate(58.71)
+				.boneMass(2.95)
+				.metabolism(1516.0)
+				.muscleRate(55.07)
+				.visceralFat(6.0)
+				.build();
+
+		 assertThat(measurementRepository.findById(measurement.time()))
+				 .isPresent()
+				 .get()
+				 .usingRecursiveComparison()
+				 .isEqualTo(measurement);
+	}
+
+	@Test
 	void shouldReturnContentTooLargeWhenCsvFileGreaterThanMaxFileSizeIsUploaded() {
 		byte[] csv = new byte[2 * 1024 * 1024]; // 2 MiB
 
