@@ -4,25 +4,26 @@ import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
 import dev.nasenov.miscale2pg.dto.UploadResponse;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledInNativeImage;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.convention.TestBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-import java.util.List;
+import java.util.Collection;
 
 @WebMvcTest
 @Import(JacksonConfiguration.class)
-@DisabledInNativeImage
 class MiScaleControllerTest {
 
-    @MockitoBean
+    @TestBean
     MiScaleService miScaleService;
+
+    static MiScaleService miScaleService() {
+        return Collection::size;
+    }
 
     @Autowired
     MockMvcTester mockMvcTester;
@@ -99,8 +100,6 @@ class MiScaleControllerTest {
     @Test
     void shouldReturnOKWhenHeadersOnlyCsvFileIsUploaded() {
         String csv = "time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat";
-
-        Mockito.when(miScaleService.save(List.of())).thenReturn(0);
 
         mockMvcTester.post()
                 .uri("/api/measurements")
