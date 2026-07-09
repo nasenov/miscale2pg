@@ -1,10 +1,10 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
-import dev.nasenov.miscale2pg.dto.UploadResponse;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -29,29 +29,36 @@ public class MiScaleController {
     private final MiScaleService miScaleService;
 
     @PostMapping
-    public ResponseEntity<UploadResponse> upload(@RequestParam MultipartFile file) throws IOException {
+    public ResponseEntity<Void> upload(@RequestParam MultipartFile file) throws IOException {
         try (MappingIterator<MiScaleMeasurement> iterator = miScaleMeasurementReader.readValues(file.getBytes())) {
             List<MiScaleMeasurement> measurements = iterator.readAll();
 
-            int saved = miScaleService.save(measurements);
+            if (measurements.isEmpty()) {
+                return ResponseEntity.ok().build();
+            }
 
-            return ResponseEntity.status(saved != 0 ? HttpStatus.CREATED : HttpStatus.OK)
-                    .body(new UploadResponse(measurements.size(), saved));
+            miScaleService.save(measurements);
+
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         }
     }
 
     @ExceptionHandler(CsvReadException.class)
-    public ResponseEntity<ProblemDetail> handleCsvReadException(CsvReadException ex) {
+    public ProblemDetail handleCsvReadException(CsvReadException ex) {
         log.error("Failed to read CSV file", ex);
-        return ResponseEntity.badRequest()
-                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be read."));
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be read.");
     }
 
     @ExceptionHandler(MismatchedInputException.class)
-    public ResponseEntity<ProblemDetail> handleMismatchedInputException(MismatchedInputException ex) {
+    public ProblemDetail handleMismatchedInputException(MismatchedInputException ex) {
         log.error("Failed to parse CSV file", ex);
-        return ResponseEntity.badRequest()
-                .body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be parsed."));
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "CSV file could not be parsed.");
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ProblemDetail handleDataAccessException(DataAccessException ex) {
+        log.error("Failed to save measurements", ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
     }
 
 }

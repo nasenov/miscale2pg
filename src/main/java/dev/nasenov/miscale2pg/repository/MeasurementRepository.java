@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 @Repository
@@ -65,7 +66,7 @@ public class MeasurementRepository {
                 .optional();
     }
 
-    public void saveAll(Iterable<Measurement> measurements) {
+    public void saveAll(Collection<Measurement> measurements) {
         measurements.forEach(measurement -> jdbcClient.sql(UPSERT_SQL)
                 .paramSource(measurement)
                 .update());
