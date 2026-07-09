@@ -65,11 +65,6 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     ktfmt().googleStyle()
   }
 
-  sql {
-    target("src/*/resources/**/*.sql")
-    idea()
-  }
-
   json {
     target("**/*.json")
     prettier()
