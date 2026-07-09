@@ -7,5 +7,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RegisterReflectionForBinding({MiScaleMeasurement.class, Measurement.class})
-public class NativeHintsConfiguration {
-}
+public class NativeHintsConfiguration {}

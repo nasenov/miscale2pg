@@ -9,11 +9,10 @@ import tools.jackson.dataformat.csv.CsvMapper;
 @Configuration
 public class JacksonConfiguration {
 
-    @Bean
-    public ObjectReader miScaleMeasurementReader() {
-        CsvMapper csvMapper = CsvMapper.builder().build();
+  @Bean
+  public ObjectReader miScaleMeasurementReader() {
+    CsvMapper csvMapper = CsvMapper.builder().build();
 
-        return csvMapper.readerFor(MiScaleMeasurement.class).with(csvMapper.schemaWithHeader());
-    }
-
+    return csvMapper.readerFor(MiScaleMeasurement.class).with(csvMapper.schemaWithHeader());
+  }
 }
