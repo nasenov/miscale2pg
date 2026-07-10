@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.test.web.servlet.assertj.MvcTestResultAssert;
 
 @WebMvcTest
 @Import(JacksonConfiguration.class)
@@ -43,13 +44,7 @@ class MiScaleControllerTest {
 
   @Test
   void shouldReturnBadRequestWhenEmptyFileIsUploaded() {
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", "".getBytes())
-        .exchange()
-        .assertThat()
+    upload("")
         .hasStatus(HttpStatus.BAD_REQUEST)
         .bodyJson()
         .convertTo(ProblemDetail.class)
@@ -65,13 +60,7 @@ class MiScaleControllerTest {
         Dolor sit amet consectetur adipiscing elit quisque faucibus.
         """;
 
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", text.getBytes())
-        .exchange()
-        .assertThat()
+    upload(text)
         .hasStatus(HttpStatus.BAD_REQUEST)
         .bodyJson()
         .convertTo(ProblemDetail.class)
@@ -87,13 +76,7 @@ class MiScaleControllerTest {
         1,John Doe,28
         """;
 
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", csv.getBytes())
-        .exchange()
-        .assertThat()
+    upload(csv)
         .hasStatus(HttpStatus.BAD_REQUEST)
         .bodyJson()
         .convertTo(ProblemDetail.class)
@@ -109,13 +92,7 @@ class MiScaleControllerTest {
         2026-06-25 04:33:57+0000,null,null,null,null,null,null,null,null,null
         """;
 
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", csv.getBytes())
-        .exchange()
-        .assertThat()
+    upload(csv)
         .hasStatus(HttpStatus.BAD_REQUEST)
         .bodyJson()
         .convertTo(ProblemDetail.class)
@@ -130,16 +107,7 @@ class MiScaleControllerTest {
 
     when(miScaleService.save(List.of())).thenReturn(0);
 
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", csv.getBytes())
-        .exchange()
-        .assertThat()
-        .hasStatus(HttpStatus.OK)
-        .body()
-        .isEmpty();
+    upload(csv).hasStatus(HttpStatus.OK).body().isEmpty();
   }
 
   @Test
@@ -152,13 +120,7 @@ class MiScaleControllerTest {
 
     when(miScaleService.save(anyList())).thenThrow(DataIntegrityViolationException.class);
 
-    mockMvcTester
-        .post()
-        .uri("/api/measurements")
-        .multipart()
-        .file("file", csv.getBytes())
-        .exchange()
-        .assertThat()
+    upload(csv)
         .hasStatus(HttpStatus.INTERNAL_SERVER_ERROR)
         .bodyJson()
         .convertTo(ProblemDetail.class)
@@ -166,5 +128,15 @@ class MiScaleControllerTest {
         .containsExactly(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "An unexpected error occurred. Please try again later.");
+  }
+
+  private MvcTestResultAssert upload(String file) {
+    return mockMvcTester
+        .post()
+        .uri("/api/measurements")
+        .multipart()
+        .file("file", file.getBytes())
+        .exchange()
+        .assertThat();
   }
 }

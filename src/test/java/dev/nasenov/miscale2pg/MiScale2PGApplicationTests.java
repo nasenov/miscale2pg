@@ -54,25 +54,7 @@ class MiScale2PGApplicationTests {
         2026-06-24 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
         """;
 
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new ByteArrayResource(csv.getBytes()) {
-          @Override
-          public String getFilename() {
-            return "measurements.csv";
-          }
-        });
-
-    restTestClient
-        .post()
-        .uri("/api/measurements")
-        .body(body)
-        .exchange()
-        .expectStatus()
-        .isCreated()
-        .expectBody()
-        .isEmpty();
+    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
 
     Measurement completeMeasurement =
         Measurement.builder()
@@ -115,25 +97,7 @@ class MiScale2PGApplicationTests {
         2026-06-25 04:33:57+0000,67.8,180.0,20.9,14.422834,58.705936,2.9538348,1516.0,55.067486,6.0
         """;
 
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new ByteArrayResource(csv.getBytes()) {
-          @Override
-          public String getFilename() {
-            return "measurements.csv";
-          }
-        });
-
-    restTestClient
-        .post()
-        .uri("/api/measurements")
-        .body(body)
-        .exchange()
-        .expectStatus()
-        .isCreated()
-        .expectBody()
-        .isEmpty();
+    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
 
     Measurement measurement =
         Measurement.builder()
@@ -181,23 +145,9 @@ class MiScale2PGApplicationTests {
 
   @Test
   void shouldReturnContentTooLargeWhenCsvFileGreaterThanMaxFileSizeIsUploaded() {
-    byte[] csv = new byte[2 * 1024 * 1024]; // 2 MiB
+    String csv = "a".repeat(2 * 1024 * 1024); // 2 MiB
 
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new ByteArrayResource(csv) {
-          @Override
-          public String getFilename() {
-            return "measurements.csv";
-          }
-        });
-
-    restTestClient
-        .post()
-        .uri("/api/measurements")
-        .body(body)
-        .exchange()
+    upload(csv)
         .expectStatus()
         .isEqualTo(HttpStatus.CONTENT_TOO_LARGE)
         .expectBody(ProblemDetail.class)
@@ -207,5 +157,19 @@ class MiScale2PGApplicationTests {
               assertThat(response.getStatus()).isEqualTo(HttpStatus.CONTENT_TOO_LARGE.value());
               assertThat(response.getDetail()).isEqualTo("Maximum upload size exceeded");
             });
+  }
+
+  private RestTestClient.ResponseSpec upload(String file) {
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add(
+        "file",
+        new ByteArrayResource(file.getBytes()) {
+          @Override
+          public String getFilename() {
+            return "measurements.csv";
+          }
+        });
+
+    return restTestClient.post().uri("/api/measurements").body(body).exchange();
   }
 }
