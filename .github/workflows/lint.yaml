@@ -20,8 +20,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  spotless-lint:
-    name: Spotless Lint
+  lint:
+    name: Lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
