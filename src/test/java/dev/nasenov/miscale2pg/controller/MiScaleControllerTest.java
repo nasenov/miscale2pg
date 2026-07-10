@@ -102,6 +102,28 @@ class MiScaleControllerTest {
   }
 
   @Test
+  void shouldReturnBadRequestWhenCsvFileWithInvalidRowIsUploaded() {
+    String csv =
+        """
+        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
+        2026-06-25 04:33:57+0000,null,null,null,null,null,null,null,null,null
+        """;
+
+    mockMvcTester
+        .post()
+        .uri("/api/measurements")
+        .multipart()
+        .file("file", csv.getBytes())
+        .exchange()
+        .assertThat()
+        .hasStatus(HttpStatus.BAD_REQUEST)
+        .bodyJson()
+        .convertTo(ProblemDetail.class)
+        .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
+  }
+
+  @Test
   void shouldReturnOKWhenHeadersOnlyCsvFileIsUploaded() {
     String csv =
         "time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat";
