@@ -1,7 +1,10 @@
 package dev.nasenov.miscale2pg.controller;
 
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurementViolation;
 import dev.nasenov.miscale2pg.service.MiScaleService;
+import jakarta.validation.Validator;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +32,33 @@ public class MiScaleController {
 
   private final ObjectReader miScaleMeasurementReader;
 
+  private final Validator validator;
+
   private final MiScaleService miScaleService;
 
   @PostMapping
-  public ResponseEntity<Void> upload(@RequestParam MultipartFile file) throws IOException {
+  public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
     try (MappingIterator<MiScaleMeasurement> iterator =
         miScaleMeasurementReader.readValues(file.getBytes())) {
-      List<MiScaleMeasurement> measurements = iterator.readAll();
+      MiScaleMeasurementImport measurementsImport = MiScaleMeasurementImport.of(iterator.readAll());
+      List<MiScaleMeasurement> measurements = measurementsImport.measurements();
 
       if (measurements.isEmpty()) {
         return ResponseEntity.ok().build();
+      }
+
+      List<MiScaleMeasurementViolation> violations =
+          validator.validate(measurementsImport).stream()
+              .map(MiScaleMeasurementViolation::from)
+              .toList();
+
+      if (!violations.isEmpty()) {
+        ProblemDetail problemDetail =
+            ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "CSV file contains invalid measurement(s).");
+        problemDetail.setProperty("violations", violations);
+
+        return ResponseEntity.badRequest().body(problemDetail);
       }
 
       miScaleService.save(measurements);

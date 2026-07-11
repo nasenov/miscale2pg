@@ -89,7 +89,7 @@ class MiScaleControllerTest {
     String csv =
         """
         time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        2026-06-25 04:33:57+0000,null,null,null,null,null,null,null,null,null
+        2026-06-23 07:35:53+0000,4.8,60.0,20.9,4.0,38.0,25.0,516.0,75.0,36.0
         """;
 
     upload(csv)
@@ -97,7 +97,8 @@ class MiScaleControllerTest {
         .bodyJson()
         .convertTo(ProblemDetail.class)
         .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
-        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be parsed.");
+        .containsExactly(
+            HttpStatus.BAD_REQUEST.value(), "CSV file contains invalid measurement(s).");
   }
 
   @Test
