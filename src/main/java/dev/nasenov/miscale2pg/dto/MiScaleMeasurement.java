@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Past;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 
 @Builder
 public record MiScaleMeasurement(
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ssXX") OffsetDateTime time,
+    @Past @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ssXX") OffsetDateTime time,
     @DecimalMin(value = "5.0") @DecimalMax(value = "150.0") double weight,
     @DecimalMin(value = "90.0") @DecimalMax(value = "220.0") double height,
     double bmi,
