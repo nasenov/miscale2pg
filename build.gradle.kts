@@ -59,7 +59,6 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     forbidWildcardImports()
     forbidModuleImports()
     googleJavaFormat()
-    formatAnnotations()
   }
 
   kotlinGradle {

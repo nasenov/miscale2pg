@@ -15,7 +15,8 @@ public record MiScaleMeasurement(
     double bmi,
     @DecimalMin(value = "5.0") @DecimalMax(value = "50.0") Double fatRate,
     @DecimalMin(value = "40.0") @DecimalMax(value = "80.0") Double bodyWaterRate,
-    @DecimalMin(value = "0.0", inclusive = false) @DecimalMax(value = "20.0", inclusive = false) Double boneMass,
+    @DecimalMin(value = "0.0", inclusive = false) @DecimalMax(value = "20.0", inclusive = false)
+        Double boneMass,
     @DecimalMin(value = "1000.0") @DecimalMax(value = "3000.0") Double metabolism,
     @DecimalMin(value = "0.0", inclusive = false) Double muscleRate,
     @DecimalMin(value = "0.0") @DecimalMax(value = "30.0") Double visceralFat) {
@@ -27,15 +28,18 @@ public record MiScaleMeasurement(
     return Math.abs(bmi - calculated) <= 0.1;
   }
 
-  @AssertTrue(message = "must be less than weight") public boolean isBoneMass() {
+  @AssertTrue(message = "must be less than weight")
+  public boolean isBoneMass() {
     return boneMass == null || boneMass < weight;
   }
 
-  @AssertTrue(message = "must be less than weight") public boolean isMuscleRate() {
+  @AssertTrue(message = "must be less than weight")
+  public boolean isMuscleRate() {
     return muscleRate == null || muscleRate < weight;
   }
 
-  @AssertTrue(message = "must be equal to weight within 1 unit") public boolean isBodyComposition() {
+  @AssertTrue(message = "must be equal to weight within 1 unit")
+  public boolean isBodyComposition() {
     if (fatRate == null || boneMass == null || muscleRate == null) {
       return true;
     }
