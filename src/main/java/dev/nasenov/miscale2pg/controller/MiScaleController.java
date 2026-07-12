@@ -37,9 +37,10 @@ public class MiScaleController {
   private final MiScaleService miScaleService;
 
   @PostMapping
-  public ResponseEntity<?> upload(@RequestParam MultipartFile file) throws IOException {
+  public ResponseEntity<?> upload(@RequestParam MultipartFile file) {
     try (MappingIterator<MiScaleMeasurement> iterator =
         miScaleMeasurementReader.readValues(file.getBytes())) {
+
       MiScaleMeasurementImport measurementsImport = MiScaleMeasurementImport.of(iterator.readAll());
       List<MiScaleMeasurement> measurements = measurementsImport.measurements();
 
@@ -56,6 +57,7 @@ public class MiScaleController {
         ProblemDetail problemDetail =
             ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, "CSV file contains invalid measurement(s).");
+
         problemDetail.setProperty("violations", violations);
 
         return ResponseEntity.badRequest().body(problemDetail);
@@ -64,6 +66,13 @@ public class MiScaleController {
       miScaleService.save(measurements);
 
       return ResponseEntity.status(HttpStatus.CREATED).build();
+    } catch (IOException ex) {
+      log.error("Failed to read file", ex);
+      return ResponseEntity.internalServerError()
+          .body(
+              ProblemDetail.forStatusAndDetail(
+                  HttpStatus.INTERNAL_SERVER_ERROR,
+                  "An unexpected error occurred. Please try again later."));
     }
   }
 
