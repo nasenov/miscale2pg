@@ -1,11 +1,10 @@
 package dev.nasenov.miscale2pg.controller;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
 import dev.nasenov.miscale2pg.service.MiScaleService;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,8 +105,6 @@ class MiScaleControllerTest {
     String csv =
         "time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat";
 
-    when(miScaleService.save(List.of())).thenReturn(0);
-
     upload(csv).hasStatus(HttpStatus.OK).body().isEmpty();
   }
 
@@ -119,7 +116,7 @@ class MiScaleControllerTest {
         2026-06-25 04:33:57+0000,67.8,180.0,20.9,14.422834,58.705936,2.9538348,1516.0,55.067486,6.0
         """;
 
-    when(miScaleService.save(anyList())).thenThrow(DataIntegrityViolationException.class);
+    doThrow(DataIntegrityViolationException.class).when(miScaleService).save(anyList());
 
     upload(csv)
         .hasStatus(HttpStatus.INTERNAL_SERVER_ERROR)

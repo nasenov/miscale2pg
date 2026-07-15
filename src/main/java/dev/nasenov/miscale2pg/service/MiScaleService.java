@@ -24,13 +24,11 @@ public class MiScaleService {
   }
 
   @Transactional
-  public int save(Collection<MiScaleMeasurement> miScaleMeasurements) {
+  public void save(Collection<MiScaleMeasurement> miScaleMeasurements) {
     List<Measurement> measurements =
         miScaleMeasurements.stream().map(MiScaleService::convert).toList();
 
     measurementRepository.saveAll(measurements);
-
-    return measurements.size();
   }
 
   private static MeasurementResponse convert(Measurement measurement) {
