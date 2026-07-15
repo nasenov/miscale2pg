@@ -1,11 +1,13 @@
 package dev.nasenov.miscale2pg.controller;
 
+import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementViolation;
 import dev.nasenov.miscale2pg.service.MiScaleService;
 import jakarta.validation.Validator;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +38,12 @@ public class MiScaleController {
   private final Validator validator;
 
   private final MiScaleService miScaleService;
+
+  @GetMapping
+  public List<MeasurementResponse> findByTimeRange(
+      @RequestParam OffsetDateTime from, @RequestParam OffsetDateTime to) {
+    return miScaleService.findByTimeRange(from, to);
+  }
 
   @PostMapping
   public ResponseEntity<?> upload(@RequestParam MultipartFile file) {
@@ -91,7 +100,7 @@ public class MiScaleController {
 
   @ExceptionHandler(DataAccessException.class)
   public ProblemDetail handleDataAccessException(DataAccessException ex) {
-    log.error("Failed to save measurements", ex);
+    log.error("Database exception", ex);
     return ProblemDetail.forStatusAndDetail(
         HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
   }

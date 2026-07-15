@@ -1,8 +1,10 @@
 package dev.nasenov.miscale2pg.service;
 
+import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,12 @@ public class MiScaleService {
 
   private final MeasurementRepository measurementRepository;
 
+  public List<MeasurementResponse> findByTimeRange(OffsetDateTime from, OffsetDateTime to) {
+    return measurementRepository.findByTimeRange(from, to).stream()
+        .map(MiScaleService::convert)
+        .toList();
+  }
+
   @Transactional
   public int save(Collection<MiScaleMeasurement> miScaleMeasurements) {
     List<Measurement> measurements =
@@ -23,6 +31,21 @@ public class MiScaleService {
     measurementRepository.saveAll(measurements);
 
     return measurements.size();
+  }
+
+  private static MeasurementResponse convert(Measurement measurement) {
+    return MeasurementResponse.builder()
+        .time(measurement.time())
+        .weight(measurement.weight())
+        .height(measurement.height())
+        .bmi(measurement.bmi())
+        .fatRate(measurement.fatRate())
+        .bodyWaterRate(measurement.bodyWaterRate())
+        .boneMass(measurement.boneMass())
+        .metabolism(measurement.metabolism())
+        .muscleRate(measurement.muscleRate())
+        .visceralFat(measurement.visceralFat())
+        .build();
   }
 
   private static Measurement convert(MiScaleMeasurement miScaleMeasurement) {

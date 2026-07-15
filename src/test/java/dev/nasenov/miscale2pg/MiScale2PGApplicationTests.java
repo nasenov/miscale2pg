@@ -3,6 +3,7 @@ package dev.nasenov.miscale2pg;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -156,6 +158,55 @@ class MiScale2PGApplicationTests {
               assertThat(response).isNotNull();
               assertThat(response.getStatus()).isEqualTo(HttpStatus.CONTENT_TOO_LARGE.value());
               assertThat(response.getDetail()).isEqualTo("Maximum upload size exceeded");
+            });
+  }
+
+  @Test
+  void shouldReturnOnlyMeasurementsBetweenTheTimeRange() {
+    String csv =
+        """
+      time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
+      2026-06-29 07:15:42+0000,66.8,180,20.6,13.93635,59.039665,2.9264562,1501,54.564064,6
+      2026-06-30 04:34:46+0000,68.75,180,21.2,14.906007,58.374477,2.9786344,1530,55.523487,7
+      2026-07-04 07:20:14+0000,68.35,180,21,15.022793,58.294365,2.9569604,1515,55.124958,7
+      2026-07-05 07:34:47+0000,68.1,180,21,14.918178,58.36613,2.9496775,1511,54.991043,7
+      """;
+
+    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
+
+    MeasurementResponse expected =
+        MeasurementResponse.builder()
+            .time(OffsetDateTime.parse("2026-06-30T04:34:46Z"))
+            .weight(68.75)
+            .height(180.0)
+            .bmi(21.2)
+            .fatRate(14.91)
+            .bodyWaterRate(58.37)
+            .boneMass(2.98)
+            .metabolism(1530.0)
+            .muscleRate(55.52)
+            .visceralFat(7.0)
+            .build();
+
+    restTestClient
+        .get()
+        .uri(
+            uriBuilder ->
+                uriBuilder
+                    .path("/api/measurements")
+                    .queryParam("from", OffsetDateTime.parse("2026-06-29T12:00:00Z"))
+                    .queryParam("to", OffsetDateTime.parse("2026-06-30T12:00:00Z"))
+                    .build())
+        .exchangeSuccessfully()
+        .expectStatus()
+        .isOk()
+        .expectBody(new ParameterizedTypeReference<List<MeasurementResponse>>() {})
+        .consumeWith(
+            result -> {
+              List<MeasurementResponse> measurements = result.getResponseBody();
+
+              assertThat(measurements).hasSize(1);
+              assertThat(measurements.getFirst()).isEqualTo(expected);
             });
   }
 

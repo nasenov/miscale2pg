@@ -3,6 +3,7 @@ package dev.nasenov.miscale2pg.repository;
 import dev.nasenov.miscale2pg.model.Measurement;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -17,6 +18,14 @@ public class MeasurementRepository {
       SELECT *
       FROM measurement
       WHERE "time" = :id
+      """;
+
+  private static final String FIND_BY_TIME_RANGE_SQL =
+      """
+      SELECT *
+      FROM measurement
+      WHERE "time" BETWEEN :from AND :to
+      ORDER BY "time"
       """;
 
   private static final String UPSERT_SQL =
@@ -62,6 +71,15 @@ public class MeasurementRepository {
 
   public Optional<Measurement> findById(OffsetDateTime id) {
     return jdbcClient.sql(FIND_BY_ID_SQL).param("id", id).query(Measurement.class).optional();
+  }
+
+  public List<Measurement> findByTimeRange(OffsetDateTime from, OffsetDateTime to) {
+    return jdbcClient
+        .sql(FIND_BY_TIME_RANGE_SQL)
+        .param("from", from)
+        .param("to", to)
+        .query(Measurement.class)
+        .list();
   }
 
   public void saveAll(Collection<Measurement> measurements) {
