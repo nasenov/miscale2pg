@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.1.0](https://github.com/nasenov/miscale2pg/compare/0.0.10...0.1.0) (2026-07-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* save measurements in transaction
+
+### Features
+
+* add measurement table constraints ([93a8b32](https://github.com/nasenov/miscale2pg/commit/93a8b32d8420ea0a08e0917fff6e7f717452c0ea))
+* add mi scale measurement validations ([baedae4](https://github.com/nasenov/miscale2pg/commit/baedae4e6997c66cf076cc387883196cb41f82f9))
+* get measurements by time range endpoint ([ffb2c0f](https://github.com/nasenov/miscale2pg/commit/ffb2c0f7a761bc26eda85ec807da930b81fa3781))
+* save measurements in transaction ([a2caacc](https://github.com/nasenov/miscale2pg/commit/a2caaccc79a8542c4fc2df66f16bed290ad5902e))
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.3 ➔ 1.1.4) ([#29](https://github.com/nasenov/miscale2pg/issues/29)) ([9b2d89e](https://github.com/nasenov/miscale2pg/commit/9b2d89eb9969ab6883a9dc7fb592ecdf04492562))
+
+
+### Miscellaneous Chores
+
+* add validation for time to be in the past ([5f0d077](https://github.com/nasenov/miscale2pg/commit/5f0d0779f246e7781c5e1f6ccc083e7ceb11ee5f))
+* fix deprecated usage of @Valid ([0beb3da](https://github.com/nasenov/miscale2pg/commit/0beb3daa05890984f95a69f7859ee86a955e080a))
+* handle IOException in controller upload method ([e1ffa0a](https://github.com/nasenov/miscale2pg/commit/e1ffa0a73a46b40fcdd680fa25262769d2092330))
+
+
+### Code Refactoring
+
+* remove unused save method return value ([1765c92](https://github.com/nasenov/miscale2pg/commit/1765c928a74cadcbc202d71662cfbd2f39099b84))
+
 ## [0.0.10](https://github.com/nasenov/miscale2pg/compare/0.0.9...0.0.10) (2026-07-07)
 
 
