@@ -4,7 +4,8 @@ plugins {
   java
   id("org.springframework.boot") version "4.1.0"
   id("io.spring.dependency-management") version "1.1.7"
-  id("org.graalvm.buildtools.native") version "1.1.4"
+  // https://github.com/graalvm/native-build-tools/issues/860
+  id("org.graalvm.buildtools.native") version "0.11.5"
   id("com.diffplug.spotless") version "8.8.0"
 }
 
