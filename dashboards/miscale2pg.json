@@ -33,7 +33,7 @@
       "type": "datasource",
       "id": "yesoreyeram-infinity-datasource",
       "name": "Infinity",
-      "version": "3.10.1"
+      "version": "3.11.1"
     }
   ],
   "annotations": {
@@ -136,7 +136,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -225,7 +225,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -319,7 +319,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -405,7 +405,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -491,7 +491,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -573,7 +573,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -658,7 +658,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -744,7 +744,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -846,7 +846,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -935,7 +935,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1029,7 +1029,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1115,7 +1115,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1201,7 +1201,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1283,7 +1283,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1368,7 +1368,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1454,7 +1454,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1615,7 +1615,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1754,7 +1754,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "${url}",
+          "url": "",
           "url_options": {
             "data": "",
             "method": "GET",
@@ -1785,7 +1785,7 @@
         "allowCustomValue": true,
         "current": {
           "text": "",
-          "value": "${DS_MISCALE2PG}",
+          "value": "${DS_INFINITY}",
           "selected": true
         },
         "includeAll": false,
@@ -1795,22 +1795,6 @@
         "refresh": 1,
         "regex": "",
         "type": "datasource"
-      },
-      {
-        "current": {
-          "text": "",
-          "value": ""
-        },
-        "name": "url",
-        "options": [
-          {
-            "selected": true,
-            "text": "",
-            "value": ""
-          }
-        ],
-        "query": "",
-        "type": "textbox"
       }
     ]
   },
@@ -1835,6 +1819,6 @@
   "timezone": "browser",
   "title": "miscale2pg",
   "uid": "ad9w4s7",
-  "version": 4,
+  "version": 2,
   "weekStart": ""
 }
