@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.2](https://github.com/nasenov/miscale2pg/compare/0.1.1...0.1.2) (2026-07-24)
+
+
+### Features
+
+* add grafana dashboard ([6f72c44](https://github.com/nasenov/miscale2pg/commit/6f72c44cdcc128adc595ccd46f680f188107ca95))
+
+
+### Miscellaneous Chores
+
+* store grafana dashboard in json ([58ca28e](https://github.com/nasenov/miscale2pg/commit/58ca28eac84b4c474c977dfddc41d085467b162a))
+* store grafana dashboard in v1 json format ([8dc6366](https://github.com/nasenov/miscale2pg/commit/8dc636603c272cd2356381c0b891fab85634115c))
+* update grafana dashboard ([bc36062](https://github.com/nasenov/miscale2pg/commit/bc360622750ad4a286629a1550a82625c4f6a872))
+* update grafana dashboard ([a050c47](https://github.com/nasenov/miscale2pg/commit/a050c47dbebf63eb0840d144df559d118ea16d3a))
+* update grafana dashboard ([25a4dd5](https://github.com/nasenov/miscale2pg/commit/25a4dd58c2c0b3a73da7a6887e8d118f0278d5f2))
+
 ## [0.1.1](https://github.com/nasenov/miscale2pg/compare/0.1.0...0.1.1) (2026-07-15)
 
 
