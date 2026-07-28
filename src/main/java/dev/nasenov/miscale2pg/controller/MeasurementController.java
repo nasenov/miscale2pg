@@ -50,7 +50,7 @@ public class MeasurementController {
         validator.validate(timeRange).stream().map(MeasurementViolation::from).toList();
 
     if (!violations.isEmpty()) {
-      return buildMeasurementViolationsResponse("Invalid measurements filter.", violations);
+      return buildMeasurementViolationsResponse("Invalid measurement time range.", violations);
     }
 
     return ResponseEntity.ok(measurementService.findByTimeRange(timeRange));

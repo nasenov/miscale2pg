@@ -139,7 +139,7 @@ class MeasurementControllerTest {
         .bodyJson()
         .convertTo(ProblemDetail.class)
         .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
-        .containsExactly(HttpStatus.BAD_REQUEST.value(), "Invalid measurements filter.");
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "Invalid measurement time range.");
   }
 
   private MvcTestResultAssert upload(String file) {
