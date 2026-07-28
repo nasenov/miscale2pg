@@ -1,11 +1,11 @@
 package dev.nasenov.miscale2pg.service;
 
 import dev.nasenov.miscale2pg.dto.MeasurementResponse;
+import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
-import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,20 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class MiScaleService {
+public class MeasurementService {
 
   private final MeasurementRepository measurementRepository;
 
-  public List<MeasurementResponse> findByTimeRange(OffsetDateTime from, OffsetDateTime to) {
-    return measurementRepository.findByTimeRange(from, to).stream()
-        .map(MiScaleService::convert)
+  public List<MeasurementResponse> findByTimeRange(MeasurementTimeRange timeRange) {
+    return measurementRepository.findByTimeRange(timeRange.from(), timeRange.to()).stream()
+        .map(MeasurementService::convert)
         .toList();
   }
 
   @Transactional
-  public void save(Collection<MiScaleMeasurement> miScaleMeasurements) {
+  public void save(MiScaleMeasurementImport miScaleMeasurementImport) {
     List<Measurement> measurements =
-        miScaleMeasurements.stream().map(MiScaleService::convert).toList();
+        miScaleMeasurementImport.measurements().stream().map(MeasurementService::convert).toList();
 
     measurementRepository.saveAll(measurements);
   }

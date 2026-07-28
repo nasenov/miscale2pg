@@ -5,12 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
-import dev.nasenov.miscale2pg.service.MiScaleService;
+import dev.nasenov.miscale2pg.service.MeasurementService;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -21,6 +26,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -40,9 +46,16 @@ class MiScale2PGApplicationTests {
 
   @Autowired RestTestClient restTestClient;
 
-  @Autowired MiScaleService miScaleService;
+  @Autowired MeasurementService measurementService;
 
   @Autowired MeasurementRepository measurementRepository;
+
+  @Autowired JdbcClient jdbcClient;
+
+  @AfterEach
+  void tearDown() {
+    jdbcClient.sql("TRUNCATE TABLE measurement RESTART IDENTITY CASCADE").update();
+  }
 
   @Test
   void contextLoads() {}
@@ -140,7 +153,10 @@ class MiScale2PGApplicationTests {
 
     MiScaleMeasurement invalid = MiScaleMeasurement.builder().time(null).build();
 
-    assertThatThrownBy(() -> miScaleService.save(List.of(valid, invalid)))
+    List<MiScaleMeasurement> miScaleMeasurements = List.of(valid, invalid);
+
+    assertThatThrownBy(
+            () -> measurementService.save(MiScaleMeasurementImport.of(miScaleMeasurements)))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThat(measurementRepository.findById(valid.time())).isNotPresent();
   }
@@ -197,6 +213,53 @@ class MiScale2PGApplicationTests {
                     .queryParam("from", OffsetDateTime.parse("2026-06-29T12:00:00Z"))
                     .queryParam("to", OffsetDateTime.parse("2026-06-30T12:00:00Z"))
                     .build())
+        .exchangeSuccessfully()
+        .expectStatus()
+        .isOk()
+        .expectBody(new ParameterizedTypeReference<List<MeasurementResponse>>() {})
+        .consumeWith(
+            result -> {
+              List<MeasurementResponse> measurements = result.getResponseBody();
+
+              assertThat(measurements).hasSize(1);
+              assertThat(measurements.getFirst()).isEqualTo(expected);
+            });
+  }
+
+  @Test
+  void shouldReturnMeasurementsFromLast30DaysWhenNoTimeRangeIsProvided() {
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXX");
+    OffsetDateTime recent =
+        OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).truncatedTo(ChronoUnit.SECONDS);
+    OffsetDateTime old =
+        OffsetDateTime.now(ZoneOffset.UTC).minusDays(40).truncatedTo(ChronoUnit.SECONDS);
+    String csv =
+        """
+        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
+        %s,68.75,180,21.2,14.906007,58.374477,2.9786344,1530,55.523487,7
+        %s,66.8,180,20.6,13.93635,59.039665,2.9264562,1501,54.564064,6
+        """
+            .formatted(dateTimeFormatter.format(recent), dateTimeFormatter.format(old));
+
+    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
+
+    MeasurementResponse expected =
+        MeasurementResponse.builder()
+            .time(recent)
+            .weight(68.75)
+            .height(180.0)
+            .bmi(21.2)
+            .fatRate(14.91)
+            .bodyWaterRate(58.37)
+            .boneMass(2.98)
+            .metabolism(1530.0)
+            .muscleRate(55.52)
+            .visceralFat(7.0)
+            .build();
+
+    restTestClient
+        .get()
+        .uri("/api/measurements")
         .exchangeSuccessfully()
         .expectStatus()
         .isOk()

@@ -1,14 +1,16 @@
 package dev.nasenov.miscale2pg.controller;
 
-import dev.nasenov.miscale2pg.dto.MeasurementResponse;
+import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
+import dev.nasenov.miscale2pg.dto.MeasurementViolation;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementViolation;
-import dev.nasenov.miscale2pg.service.MiScaleService;
+import dev.nasenov.miscale2pg.service.MeasurementService;
 import jakarta.validation.Validator;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -31,18 +33,27 @@ import tools.jackson.dataformat.csv.CsvReadException;
 @RestController
 @RequestMapping("/api/measurements")
 @RequiredArgsConstructor
-public class MiScaleController {
+public class MeasurementController {
 
   private final ObjectReader miScaleMeasurementReader;
 
   private final Validator validator;
 
-  private final MiScaleService miScaleService;
+  private final MeasurementService measurementService;
 
   @GetMapping
-  public List<MeasurementResponse> findByTimeRange(
-      @RequestParam OffsetDateTime from, @RequestParam OffsetDateTime to) {
-    return miScaleService.findByTimeRange(from, to);
+  public ResponseEntity<?> findByTimeRange(
+      @RequestParam Optional<OffsetDateTime> from, @RequestParam Optional<OffsetDateTime> to) {
+    MeasurementTimeRange timeRange = buildMeasurementTimeRange(from, to);
+
+    List<MeasurementViolation> violations =
+        validator.validate(timeRange).stream().map(MeasurementViolation::from).toList();
+
+    if (!violations.isEmpty()) {
+      return buildMeasurementViolationsResponse("Invalid measurements filter.", violations);
+    }
+
+    return ResponseEntity.ok(measurementService.findByTimeRange(timeRange));
   }
 
   @PostMapping
@@ -51,28 +62,20 @@ public class MiScaleController {
         miScaleMeasurementReader.readValues(file.getBytes())) {
 
       MiScaleMeasurementImport measurementsImport = MiScaleMeasurementImport.of(iterator.readAll());
-      List<MiScaleMeasurement> measurements = measurementsImport.measurements();
 
-      if (measurements.isEmpty()) {
+      if (measurementsImport.measurements().isEmpty()) {
         return ResponseEntity.ok().build();
       }
 
-      List<MiScaleMeasurementViolation> violations =
-          validator.validate(measurementsImport).stream()
-              .map(MiScaleMeasurementViolation::from)
-              .toList();
+      List<MeasurementViolation> violations =
+          validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
 
       if (!violations.isEmpty()) {
-        ProblemDetail problemDetail =
-            ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST, "CSV file contains invalid measurement(s).");
-
-        problemDetail.setProperty("violations", violations);
-
-        return ResponseEntity.badRequest().body(problemDetail);
+        return buildMeasurementViolationsResponse(
+            "CSV file contains invalid measurement(s).", violations);
       }
 
-      miScaleService.save(measurements);
+      measurementService.save(measurementsImport);
 
       return ResponseEntity.status(HttpStatus.CREATED).build();
     } catch (IOException ex) {
@@ -103,5 +106,26 @@ public class MiScaleController {
     log.error("Database exception", ex);
     return ProblemDetail.forStatusAndDetail(
         HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+  }
+
+  private MeasurementTimeRange buildMeasurementTimeRange(
+      Optional<OffsetDateTime> from, Optional<OffsetDateTime> to) {
+    OffsetDateTime effectiveTo =
+        to.orElseGet(
+            () ->
+                from.map(effectiveFrom -> effectiveFrom.plusDays(30))
+                    .orElseGet(() -> OffsetDateTime.now(ZoneOffset.UTC)));
+    OffsetDateTime effectiveFrom = from.orElseGet(() -> effectiveTo.minusDays(30));
+
+    return MeasurementTimeRange.of(effectiveFrom, effectiveTo);
+  }
+
+  private ResponseEntity<ProblemDetail> buildMeasurementViolationsResponse(
+      String detail, List<MeasurementViolation> violations) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+
+    problemDetail.setProperty("violations", violations);
+
+    return ResponseEntity.badRequest().body(problemDetail);
   }
 }
