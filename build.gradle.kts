@@ -6,7 +6,7 @@ plugins {
   id("io.spring.dependency-management") version "1.1.7"
   // https://github.com/graalvm/native-build-tools/issues/860
   id("org.graalvm.buildtools.native") version "0.11.5"
-  id("com.diffplug.spotless") version "8.8.0"
+  id("com.diffplug.spotless") version "8.9.0"
 }
 
 group = "dev.nasenov"
