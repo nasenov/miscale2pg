@@ -1,0 +1,99 @@
+openapi: 3.2.0
+
+info:
+  title: miscale2pg API
+  version: 0.1.0
+  summary: Import Mi Body Composition Scale 2 measurements into PostgreSQL
+  license:
+    name: MIT
+    url: https://github.com/nasenov/miscale2pg/blob/main/LICENSE
+
+tags:
+  - name: measurements
+  - name: actuator
+
+paths:
+  /api/measurements:
+    get:
+      operationId: getMeasurements
+      summary: Get measurements by time range
+      description: >-
+        Get measurements within the given time range.
+        If time range is omitted it defaults to last 30 days.
+      tags:
+        - measurements
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2026-06-29T00:00:00Z"
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-29T00:00:00Z"
+      responses:
+        "200":
+          description: Measurements within the given time range
+          content:
+            application/json:
+              example:
+                - time: "2026-07-28T06:46:22Z"
+                  weight: 66.6
+                  height: 180.0
+                  bmi: 20.5
+                  fatRate: 14.14
+                  bodyWaterRate: 58.9
+                  boneMass: 2.91
+                  metabolism: 1489.0
+                  muscleRate: 54.27
+                  visceralFat: 6.0
+
+    post:
+      operationId: uploadMeasurements
+      summary: Upload measurements
+      tags:
+        - measurements
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  description: CSV file exported from https://user.huami.com/privacy/index.html
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Successful upload
+
+  /actuator/health:
+    get:
+      operationId: health
+      summary: Application health
+      tags:
+        - actuator
+      responses:
+        "200":
+          description: Application is healthy
+        "503":
+          description: Application is unhealthy
+
+  /actuator/prometheus:
+    get:
+      operationId: prometheus
+      summary: Prometheus metrics
+      tags:
+        - actuator
+      responses:
+        "200":
+          description: Application metrics in Prometheus format
