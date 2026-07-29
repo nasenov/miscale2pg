@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.2.0](https://github.com/nasenov/miscale2pg/compare/0.1.2...0.2.0) (2026-07-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* treat headers only csv file as bad request
+
+### Features
+
+* add openapi spec ([5f219ca](https://github.com/nasenov/miscale2pg/commit/5f219ca12865dd675ac7cdf560d029bd63084067))
+
+
+### Bug Fixes
+
+* treat headers only csv file as bad request ([3fc51a0](https://github.com/nasenov/miscale2pg/commit/3fc51a0e8467a8488f0df5cc8f68ec2a6f986384))
+
+
+### Miscellaneous Chores
+
+* update README ([57fc94b](https://github.com/nasenov/miscale2pg/commit/57fc94bb59a7e517a038a717ce749bfeb39cf04c))
+
 ## [0.1.2](https://github.com/nasenov/miscale2pg/compare/0.1.1...0.1.2) (2026-07-28)
 
 
