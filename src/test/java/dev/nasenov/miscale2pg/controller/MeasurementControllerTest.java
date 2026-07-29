@@ -96,16 +96,20 @@ class MeasurementControllerTest {
         .bodyJson()
         .convertTo(ProblemDetail.class)
         .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
-        .containsExactly(
-            HttpStatus.BAD_REQUEST.value(), "CSV file contains invalid measurement(s).");
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be validated.");
   }
 
   @Test
-  void shouldReturnOKWhenHeadersOnlyCsvFileIsUploaded() {
+  void shouldReturnBadRequestWhenHeadersOnlyCsvFileIsUploaded() {
     String csv =
         "time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat";
 
-    upload(csv).hasStatus(HttpStatus.OK).body().isEmpty();
+    upload(csv)
+        .hasStatus(HttpStatus.BAD_REQUEST)
+        .bodyJson()
+        .convertTo(ProblemDetail.class)
+        .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be validated.");
   }
 
   @Test

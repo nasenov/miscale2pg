@@ -63,16 +63,11 @@ public class MeasurementController {
 
       MiScaleMeasurementImport measurementsImport = MiScaleMeasurementImport.of(iterator.readAll());
 
-      if (measurementsImport.measurements().isEmpty()) {
-        return ResponseEntity.ok().build();
-      }
-
       List<MeasurementViolation> violations =
           validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
 
       if (!violations.isEmpty()) {
-        return buildMeasurementViolationsResponse(
-            "CSV file contains invalid measurement(s).", violations);
+        return buildMeasurementViolationsResponse("CSV file could not be validated.", violations);
       }
 
       measurementService.save(measurementsImport);
