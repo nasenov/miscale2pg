@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.3.0](https://github.com/nasenov/miscale2pg/compare/0.2.0...0.3.0) (2026-08-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Update plugin org.graalvm.buildtools.native (0.11.5 ➔ 1.1.8) ([#52](https://github.com/nasenov/miscale2pg/issues/52))
+
+### Features
+
+* **deps:** Update plugin org.graalvm.buildtools.native (0.11.5 ➔ 1.1.8) ([#52](https://github.com/nasenov/miscale2pg/issues/52)) ([ea72b81](https://github.com/nasenov/miscale2pg/commit/ea72b81629cc28a0601445127c70a8fa495cece2))
+
+
+### Build System
+
+* **gradle:** update gradle (9.6.1 ➔ 9.7.0) ([#51](https://github.com/nasenov/miscale2pg/issues/51)) ([8ba21a7](https://github.com/nasenov/miscale2pg/commit/8ba21a75e9b534155d2ffd73a0d40f775714b269))
+
+
+### Continuous Integration
+
+* enable manual trigger for release workflow ([916c392](https://github.com/nasenov/miscale2pg/commit/916c3924eb38ec92c29fd719c5bd8f569e1dd653))
+* **github-action:** update action docker/login-action (v4.5.2 ➔ v4.6.0) ([#45](https://github.com/nasenov/miscale2pg/issues/45)) ([154aac6](https://github.com/nasenov/miscale2pg/commit/154aac6a0c277ac9b843cd7b5e14a4285d1b2810))
+* **github-action:** update action graalvm/setup-graalvm (v1.6.3 ➔ v1.6.4) ([#50](https://github.com/nasenov/miscale2pg/issues/50)) ([12935e8](https://github.com/nasenov/miscale2pg/commit/12935e8c93ebeac60cb856b7459acda84541c3bc))
+* **github-action:** update action renovatebot/github-action (v46.1.21 ➔ v46.2.0) ([#46](https://github.com/nasenov/miscale2pg/issues/46)) ([e298821](https://github.com/nasenov/miscale2pg/commit/e298821b071ae51b757ebd087f6b1fba875439ca))
+* **github-action:** update action renovatebot/github-action (v46.2.0 ➔ v46.2.1) ([#48](https://github.com/nasenov/miscale2pg/issues/48)) ([2b6f202](https://github.com/nasenov/miscale2pg/commit/2b6f2025c947ff5275de03e66eca9452abad47d0))
+
+
+### Miscellaneous Chores
+
+* include every change in changelog ([b83088c](https://github.com/nasenov/miscale2pg/commit/b83088c9fa3c8753eab375c4db95ddea1858feb4))
+
 ## [0.2.0](https://github.com/nasenov/miscale2pg/compare/0.1.2...0.2.0) (2026-07-29)
 
 
