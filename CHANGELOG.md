@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/nasenov/miscale2pg/compare/0.3.0...0.3.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* add hibernate validator runtime hints ([2ab2bba](https://github.com/nasenov/miscale2pg/commit/2ab2bbad9b718dc2195815c48b773d0febeb1c4b))
+
 ## [0.3.0](https://github.com/nasenov/miscale2pg/compare/0.2.0...0.3.0) (2026-08-08)
 
 
