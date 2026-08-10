@@ -31,6 +31,7 @@ dependencies {
   implementation("org.flywaydb:flyway-database-postgresql")
   implementation("tools.jackson.dataformat:jackson-dataformat-csv")
   implementation("io.micrometer:micrometer-registry-prometheus")
+  implementation("net.lingala.zip4j:zip4j:2.11.6")
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
   runtimeOnly("org.postgresql:postgresql")

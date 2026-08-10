@@ -3,16 +3,21 @@ package dev.nasenov.miscale2pg.controller;
 import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
 import dev.nasenov.miscale2pg.dto.MeasurementViolation;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
+import dev.nasenov.miscale2pg.dto.MiScaleMeasurementCsv;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.service.MeasurementService;
 import jakarta.validation.Validator;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.io.inputstream.ZipInputStream;
+import net.lingala.zip4j.model.LocalFileHeader;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -57,22 +62,37 @@ public class MeasurementController {
   }
 
   @PostMapping
-  public ResponseEntity<?> upload(@RequestParam MultipartFile file) {
-    try (MappingIterator<MiScaleMeasurement> iterator =
-        miScaleMeasurementReader.readValues(file.getBytes())) {
-
-      MiScaleMeasurementImport measurementsImport = MiScaleMeasurementImport.of(iterator.readAll());
+  public ResponseEntity<?> upload(
+      @RequestParam MultipartFile file, @RequestParam Optional<String> password) {
+    try {
+      MiScaleMeasurementImport measurementsImport = buildMiScaleMeasurementImport(file, password);
 
       List<MeasurementViolation> violations =
           validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
 
       if (!violations.isEmpty()) {
-        return buildMeasurementViolationsResponse("CSV file could not be validated.", violations);
+        return buildMeasurementViolationsResponse(
+            "CSV file(s) could not be validated.", violations);
       }
 
       measurementService.save(measurementsImport);
 
       return ResponseEntity.status(HttpStatus.CREATED).build();
+    } catch (ZipException ex) {
+      if (ex.getType() == ZipException.Type.WRONG_PASSWORD) {
+        return ResponseEntity.badRequest()
+            .body(
+                ProblemDetail.forStatusAndDetail(
+                    HttpStatus.BAD_REQUEST,
+                    "Incorrect password for the password-protected ZIP file."));
+      }
+
+      log.error("Failed to read ZIP file", ex);
+      return ResponseEntity.internalServerError()
+          .body(
+              ProblemDetail.forStatusAndDetail(
+                  HttpStatus.INTERNAL_SERVER_ERROR,
+                  "An unexpected error occurred. Please try again later."));
     } catch (IOException ex) {
       log.error("Failed to read file", ex);
       return ResponseEntity.internalServerError()
@@ -122,5 +142,49 @@ public class MeasurementController {
     problemDetail.setProperty("violations", violations);
 
     return ResponseEntity.badRequest().body(problemDetail);
+  }
+
+  private MiScaleMeasurementImport buildMiScaleMeasurementImport(
+      MultipartFile file, Optional<String> password) throws IOException {
+    if (!isZipFile(file)) {
+      try (MappingIterator<MiScaleMeasurement> iterator =
+          miScaleMeasurementReader.readValues(file.getInputStream())) {
+        return MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(iterator.readAll())));
+      }
+    }
+
+    List<MiScaleMeasurementCsv> csvs = new ArrayList<>();
+    char[] passwordArray = password.orElse("").toCharArray();
+
+    try (ZipInputStream zipInputStream = new ZipInputStream(file.getInputStream(), passwordArray)) {
+      LocalFileHeader entry;
+      while ((entry = zipInputStream.getNextEntry()) != null) {
+        if (isMiScaleMeasurementCsv(entry)) {
+          try (MappingIterator<MiScaleMeasurement> iterator =
+              miScaleMeasurementReader.readValues(zipInputStream.readAllBytes())) {
+            csvs.add(MiScaleMeasurementCsv.of(iterator.readAll()));
+          }
+        }
+      }
+    }
+
+    return MiScaleMeasurementImport.of(csvs);
+  }
+
+  private boolean isZipFile(MultipartFile file) throws IOException {
+    byte[] content = file.getBytes();
+
+    return content.length >= 4
+        && content[0] == 'P'
+        && content[1] == 'K'
+        && ((content[2] == 3 && content[3] == 4)
+            || (content[2] == 5 && content[3] == 6)
+            || (content[2] == 7 && content[3] == 8));
+  }
+
+  private boolean isMiScaleMeasurementCsv(LocalFileHeader entry) {
+    return !entry.isDirectory()
+        && entry.getFileName().startsWith("BODY/")
+        && entry.getFileName().endsWith(".csv");
   }
 }

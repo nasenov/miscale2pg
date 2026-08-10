@@ -69,9 +69,14 @@ paths:
                 - file
               properties:
                 file:
-                  description: CSV file exported from https://user.huami.com/privacy/index.html
+                  description: >-
+                    Password-protected ZIP file exported from https://user.huami.com/privacy/index.html 
+                    or CSV file(s) extracted from the password-protected ZIP file
                   type: string
                   format: binary
+                password:
+                  description: Password for the password-protected ZIP file
+                  type: string
       responses:
         "201":
           description: Successful upload

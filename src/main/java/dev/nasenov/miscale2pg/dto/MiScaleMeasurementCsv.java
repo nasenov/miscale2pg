@@ -1,0 +1,12 @@
+package dev.nasenov.miscale2pg.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
+
+public record MiScaleMeasurementCsv(@NotEmpty List<@Valid MiScaleMeasurement> measurements) {
+
+  public static MiScaleMeasurementCsv of(List<MiScaleMeasurement> measurements) {
+    return new MiScaleMeasurementCsv(measurements);
+  }
+}

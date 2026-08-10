@@ -96,7 +96,7 @@ class MeasurementControllerTest {
         .bodyJson()
         .convertTo(ProblemDetail.class)
         .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
-        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be validated.");
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file(s) could not be validated.");
   }
 
   @Test
@@ -109,7 +109,7 @@ class MeasurementControllerTest {
         .bodyJson()
         .convertTo(ProblemDetail.class)
         .extracting(ProblemDetail::getStatus, ProblemDetail::getDetail)
-        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file could not be validated.");
+        .containsExactly(HttpStatus.BAD_REQUEST.value(), "CSV file(s) could not be validated.");
   }
 
   @Test

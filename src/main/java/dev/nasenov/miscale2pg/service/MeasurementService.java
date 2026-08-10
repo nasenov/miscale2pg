@@ -25,10 +25,12 @@ public class MeasurementService {
 
   @Transactional
   public void save(MiScaleMeasurementImport miScaleMeasurementImport) {
-    List<Measurement> measurements =
-        miScaleMeasurementImport.measurements().stream().map(MeasurementService::convert).toList();
-
-    measurementRepository.saveAll(measurements);
+    miScaleMeasurementImport
+        .csvs()
+        .forEach(
+            csv ->
+                measurementRepository.saveAll(
+                    csv.measurements().stream().map(MeasurementService::convert).toList()));
   }
 
   private static MeasurementResponse convert(Measurement measurement) {
