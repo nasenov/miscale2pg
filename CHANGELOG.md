@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/nasenov/miscale2pg/compare/0.3.1...0.3.2) (2026-08-10)
+
+
+### Features
+
+* support password protected zip file upload ([7901088](https://github.com/nasenov/miscale2pg/commit/790108887c2d40460cf6585ea9324c15392ed8f7))
+
 ## [0.3.1](https://github.com/nasenov/miscale2pg/compare/0.3.0...0.3.1) (2026-08-08)
 
 
