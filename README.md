@@ -2,7 +2,7 @@
 
 Import Mi Body Composition Scale 2 measurements into PostgreSQL
 
-`miscale2pg` is a small Spring Boot service that accepts the CSV export from the Mi Fit / Zepp Life app (via [user.huami.com](https://user.huami.com/privacy/index.html)) and stores the measurements into a PostgreSQL table. Stored data can then be queried through a simple REST API and visualized with the included Grafana dashboard.
+`miscale2pg` is a small Spring Boot service that accepts the export file from the Mi Fit / Zepp Life app (via [user.huami.com](https://user.huami.com/privacy/index.html)) and stores the measurements into a PostgreSQL table. Stored data can then be queried through a simple REST API and visualized with the included Grafana dashboard.
 
 ## Getting Started
 
