@@ -48,7 +48,7 @@ class MiScale2PGApplicationTests {
 
   @Container @ServiceConnection
   static PostgreSQLContainer postgreSQLContainer =
-      new PostgreSQLContainer(DockerImageName.parse("postgres:18.4"));
+      new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"));
 
   @Autowired RestTestClient restTestClient;
 
