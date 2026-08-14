@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.3](https://github.com/nasenov/miscale2pg/compare/0.3.2...0.3.3) (2026-08-14)
+
+
+### Features
+
+* add renovate custom manager for testcontainers ([f3b653a](https://github.com/nasenov/miscale2pg/commit/f3b653a16f6c6cf5de8dd3cfe28573ea403590de))
+* **container:** update image postgres (18.4 ➔ 18.6) ([#58](https://github.com/nasenov/miscale2pg/issues/58)) ([5670ebf](https://github.com/nasenov/miscale2pg/commit/5670ebf85c126130b4ba9b9474ac01b9d679b8be))
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.8 ➔ 1.1.9) ([#57](https://github.com/nasenov/miscale2pg/issues/57)) ([e8d9736](https://github.com/nasenov/miscale2pg/commit/e8d9736bc750a9747431bf240fedded8db033ffc))
+* let renovate process test files ([5aec6da](https://github.com/nasenov/miscale2pg/commit/5aec6da3434e6d0ed2624129db7c50c43c894d0a))
+
+
+### Continuous Integration
+
+* **github-action:** update action renovatebot/github-action (v46.2.1 ➔ v46.2.2) ([#55](https://github.com/nasenov/miscale2pg/issues/55)) ([a5e33e0](https://github.com/nasenov/miscale2pg/commit/a5e33e0ea281c1537be8a159d6a49ae0df00318e))
+* use graalvm quick build for nativeTest ([4931635](https://github.com/nasenov/miscale2pg/commit/4931635e668b63f19e89ddbac8d66ef421769418))
+
+
+### Miscellaneous Chores
+
+* update README ([2ace670](https://github.com/nasenov/miscale2pg/commit/2ace670cb9ddcfff691daf25e6a6e93dce97bb78))
+
 ## [0.3.2](https://github.com/nasenov/miscale2pg/compare/0.3.1...0.3.2) (2026-08-10)
 
 
