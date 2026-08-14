@@ -13,5 +13,6 @@
     ":semanticCommits",
     ":timezone(Europe/Sofia)"
   ],
+  "ignorePresets": [":ignoreModulesAndTests"],
   "dependencyDashboardTitle": "Renovate Dashboard"
 }
