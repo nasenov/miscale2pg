@@ -46,6 +46,14 @@ tasks.withType<Test> {
   useJUnitPlatform()
 }
 
+graalvmNative {
+  binaries {
+    named("test") {
+      quickBuild.set(true)
+    }
+  }
+}
+
 tasks.named<BootBuildImage>("bootBuildImage") {
   imageName.set("ghcr.io/nasenov/${project.name}")
   tags.set(listOf("${imageName.get()}:${project.version}"))

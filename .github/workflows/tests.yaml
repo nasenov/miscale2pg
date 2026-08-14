@@ -39,7 +39,7 @@ jobs:
           cache: gradle
 
       - name: Run Tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew test
 
       - name: Run Native Tests
-        run: ./gradlew nativeTest --no-daemon
+        run: ./gradlew nativeTest
