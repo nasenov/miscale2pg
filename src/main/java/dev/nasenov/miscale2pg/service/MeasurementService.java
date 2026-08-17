@@ -6,7 +6,10 @@ import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,13 @@ public class MeasurementService {
     return measurementRepository.findByTimeRange(timeRange.from(), timeRange.to()).stream()
         .map(MeasurementService::convert)
         .toList();
+  }
+
+  public Optional<LocalDate> findLatestMeasurementDate() {
+    return measurementRepository
+        .findLatest()
+        .map(Measurement::time)
+        .map(OffsetDateTime::toLocalDate);
   }
 
   @Transactional
