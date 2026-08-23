@@ -1,23 +1,23 @@
 package dev.nasenov.miscale2pg.controller;
 
+import dev.nasenov.miscale2pg.dto.MeasurementSync;
 import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
 import dev.nasenov.miscale2pg.dto.MeasurementViolation;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementCsv;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
+import dev.nasenov.miscale2pg.exception.MiScaleUnauthorizedException;
 import dev.nasenov.miscale2pg.service.MeasurementService;
+import dev.nasenov.miscale2pg.service.MiScaleClientService;
+import dev.nasenov.miscale2pg.service.MiScaleImportService;
 import jakarta.validation.Validator;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.io.inputstream.ZipInputStream;
-import net.lingala.zip4j.model.LocalFileHeader;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -25,12 +25,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
-import tools.jackson.databind.MappingIterator;
-import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.dataformat.csv.CsvReadException;
 
@@ -40,11 +41,13 @@ import tools.jackson.dataformat.csv.CsvReadException;
 @RequiredArgsConstructor
 public class MeasurementController {
 
-  private final ObjectReader miScaleMeasurementReader;
-
   private final Validator validator;
 
   private final MeasurementService measurementService;
+
+  private final MiScaleImportService miScaleImportService;
+
+  private final MiScaleClientService miScaleClientService;
 
   @GetMapping
   public ResponseEntity<?> findByTimeRange(
@@ -63,44 +66,35 @@ public class MeasurementController {
 
   @PostMapping
   public ResponseEntity<?> upload(
-      @RequestParam MultipartFile file, @RequestParam Optional<String> password) {
-    try {
-      MiScaleMeasurementImport measurementsImport = buildMiScaleMeasurementImport(file, password);
+      @RequestParam MultipartFile file, @RequestParam Optional<String> password)
+      throws IOException {
+    MiScaleMeasurementImport measurementsImport =
+        miScaleImportService.build(file.getBytes(), password.orElse(""));
 
-      List<MeasurementViolation> violations =
-          validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
+    return handleImport(measurementsImport);
+  }
 
-      if (!violations.isEmpty()) {
-        return buildMeasurementViolationsResponse(
-            "CSV file(s) could not be validated.", violations);
-      }
+  @PostMapping("/sync")
+  public ResponseEntity<?> sync(
+      @RequestHeader("App-Token") String appToken,
+      @RequestParam String userId,
+      @RequestParam String email,
+      @RequestParam Optional<LocalDate> startDate,
+      @RequestParam Optional<LocalDate> endDate)
+      throws IOException {
+    MeasurementSync measurementSync =
+        buildMeasurementSync(appToken, userId, email, startDate, endDate);
 
-      measurementService.save(measurementsImport);
+    List<MeasurementViolation> violations =
+        validator.validate(measurementSync).stream().map(MeasurementViolation::from).toList();
 
-      return ResponseEntity.status(HttpStatus.CREATED).build();
-    } catch (ZipException ex) {
-      if (ex.getType() == ZipException.Type.WRONG_PASSWORD) {
-        return ResponseEntity.badRequest()
-            .body(
-                ProblemDetail.forStatusAndDetail(
-                    HttpStatus.BAD_REQUEST,
-                    "Incorrect password for the password-protected ZIP file."));
-      }
-
-      log.error("Failed to read ZIP file", ex);
-      return ResponseEntity.internalServerError()
-          .body(
-              ProblemDetail.forStatusAndDetail(
-                  HttpStatus.INTERNAL_SERVER_ERROR,
-                  "An unexpected error occurred. Please try again later."));
-    } catch (IOException ex) {
-      log.error("Failed to read file", ex);
-      return ResponseEntity.internalServerError()
-          .body(
-              ProblemDetail.forStatusAndDetail(
-                  HttpStatus.INTERNAL_SERVER_ERROR,
-                  "An unexpected error occurred. Please try again later."));
+    if (!violations.isEmpty()) {
+      return buildMeasurementViolationsResponse("Invalid measurement sync request.", violations);
     }
+
+    MiScaleMeasurementImport measurementsImport = miScaleClientService.sync(measurementSync);
+
+    return handleImport(measurementsImport);
   }
 
   @ExceptionHandler(CsvReadException.class)
@@ -114,6 +108,47 @@ public class MeasurementController {
     log.error("Failed to parse CSV file", ex);
     return ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, "CSV file could not be parsed.");
+  }
+
+  @ExceptionHandler(ZipException.class)
+  public ProblemDetail handleZipException(ZipException ex) {
+    if (ex.getType() == ZipException.Type.WRONG_PASSWORD) {
+      return ProblemDetail.forStatusAndDetail(
+          HttpStatus.BAD_REQUEST, "Incorrect password for the password-protected ZIP file.");
+    }
+
+    log.error("Failed to read ZIP file", ex);
+    return ProblemDetail.forStatusAndDetail(
+        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+  }
+
+  @ExceptionHandler(IOException.class)
+  public ProblemDetail handleIOException(IOException ex) {
+    log.error("Failed to read file", ex);
+    return ProblemDetail.forStatusAndDetail(
+        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+  }
+
+  @ExceptionHandler(MiScaleUnauthorizedException.class)
+  public ProblemDetail handleMiScaleUnauthorizedException(MiScaleUnauthorizedException ex) {
+    log.error("Failed tp authenticate", ex);
+    return ProblemDetail.forStatusAndDetail(
+        HttpStatus.BAD_REQUEST, "Unable to authenticate with the provided App-Token header value.");
+  }
+
+  @ExceptionHandler(HttpClientErrorException.TooManyRequests.class)
+  public ProblemDetail handleHttpClientErrorExceptionTooManyRequests(
+      HttpClientErrorException.TooManyRequests ex) {
+    log.error("Too many requests", ex);
+    return ProblemDetail.forStatusAndDetail(
+        HttpStatus.TOO_MANY_REQUESTS, "Too many requests were sent. Please try again later.");
+  }
+
+  @ExceptionHandler(RestClientException.class)
+  public ProblemDetail handleRestClientException(RestClientException ex) {
+    log.error("Rest client exception", ex);
+    return ProblemDetail.forStatusAndDetail(
+        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
   }
 
   @ExceptionHandler(DataAccessException.class)
@@ -135,6 +170,36 @@ public class MeasurementController {
     return MeasurementTimeRange.of(effectiveFrom, effectiveTo);
   }
 
+  private MeasurementSync buildMeasurementSync(
+      String appToken,
+      String userId,
+      String email,
+      Optional<LocalDate> startDate,
+      Optional<LocalDate> endDate) {
+    LocalDate effectiveEndDate = endDate.orElseGet(LocalDate::now);
+    LocalDate effectiveStartDate =
+        startDate.orElseGet(
+            () ->
+                measurementService
+                    .findLatestMeasurementDate()
+                    .orElseGet(() -> effectiveEndDate.minusDays(30)));
+
+    return MeasurementSync.of(appToken, userId, email, effectiveStartDate, effectiveEndDate);
+  }
+
+  private ResponseEntity<?> handleImport(MiScaleMeasurementImport measurementsImport) {
+    List<MeasurementViolation> violations =
+        validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
+
+    if (!violations.isEmpty()) {
+      return buildMeasurementViolationsResponse("CSV file(s) could not be validated.", violations);
+    }
+
+    measurementService.save(measurementsImport);
+
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
+
   private ResponseEntity<ProblemDetail> buildMeasurementViolationsResponse(
       String detail, List<MeasurementViolation> violations) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
@@ -142,49 +207,5 @@ public class MeasurementController {
     problemDetail.setProperty("violations", violations);
 
     return ResponseEntity.badRequest().body(problemDetail);
-  }
-
-  private MiScaleMeasurementImport buildMiScaleMeasurementImport(
-      MultipartFile file, Optional<String> password) throws IOException {
-    if (!isZipFile(file)) {
-      try (MappingIterator<MiScaleMeasurement> iterator =
-          miScaleMeasurementReader.readValues(file.getInputStream())) {
-        return MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(iterator.readAll())));
-      }
-    }
-
-    List<MiScaleMeasurementCsv> csvs = new ArrayList<>();
-    char[] passwordArray = password.orElse("").toCharArray();
-
-    try (ZipInputStream zipInputStream = new ZipInputStream(file.getInputStream(), passwordArray)) {
-      LocalFileHeader entry;
-      while ((entry = zipInputStream.getNextEntry()) != null) {
-        if (isMiScaleMeasurementCsv(entry)) {
-          try (MappingIterator<MiScaleMeasurement> iterator =
-              miScaleMeasurementReader.readValues(zipInputStream.readAllBytes())) {
-            csvs.add(MiScaleMeasurementCsv.of(iterator.readAll()));
-          }
-        }
-      }
-    }
-
-    return MiScaleMeasurementImport.of(csvs);
-  }
-
-  private boolean isZipFile(MultipartFile file) throws IOException {
-    byte[] content = file.getBytes();
-
-    return content.length >= 4
-        && content[0] == 'P'
-        && content[1] == 'K'
-        && ((content[2] == 3 && content[3] == 4)
-            || (content[2] == 5 && content[3] == 6)
-            || (content[2] == 7 && content[3] == 8));
-  }
-
-  private boolean isMiScaleMeasurementCsv(LocalFileHeader entry) {
-    return !entry.isDirectory()
-        && entry.getFileName().startsWith("BODY/")
-        && entry.getFileName().endsWith(".csv");
   }
 }

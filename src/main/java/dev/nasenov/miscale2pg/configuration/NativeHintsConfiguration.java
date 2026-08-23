@@ -3,6 +3,7 @@ package dev.nasenov.miscale2pg.configuration;
 import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
 import dev.nasenov.miscale2pg.model.Measurement;
+import dev.nasenov.miscale2pg.service.MiScaleClientService;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -16,7 +17,9 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @RegisterReflectionForBinding({
   MiScaleMeasurement.class,
   Measurement.class,
-  MeasurementResponse.class
+  MeasurementResponse.class,
+  MiScaleClientService.MiScaleExportRequest.class,
+  MiScaleClientService.MiScaleExportResponse.class
 })
 public class NativeHintsConfiguration {
 

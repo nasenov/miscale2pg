@@ -5,6 +5,8 @@ import static org.mockito.Mockito.doThrow;
 
 import dev.nasenov.miscale2pg.configuration.JacksonConfiguration;
 import dev.nasenov.miscale2pg.service.MeasurementService;
+import dev.nasenov.miscale2pg.service.MiScaleClientService;
+import dev.nasenov.miscale2pg.service.MiScaleImportService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +20,13 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResultAssert;
 
 @WebMvcTest
-@Import(JacksonConfiguration.class)
+@Import({JacksonConfiguration.class, MiScaleImportService.class})
 @DisabledInNativeImage
 class MeasurementControllerTest {
 
   @MockitoBean MeasurementService measurementService;
+
+  @MockitoBean MiScaleClientService miScaleClientService;
 
   @Autowired MockMvcTester mockMvcTester;
 

@@ -28,6 +28,14 @@ public class MeasurementRepository {
       ORDER BY "time"
       """;
 
+  private static final String FIND_LATEST_SQL =
+      """
+      SELECT *
+      FROM measurement
+      ORDER BY "time" DESC
+      LIMIT 1
+      """;
+
   private static final String UPSERT_SQL =
       """
       INSERT INTO measurement (
@@ -80,6 +88,10 @@ public class MeasurementRepository {
         .param("to", to)
         .query(Measurement.class)
         .list();
+  }
+
+  public Optional<Measurement> findLatest() {
+    return jdbcClient.sql(FIND_LATEST_SQL).query(Measurement.class).optional();
   }
 
   public void saveAll(Collection<Measurement> measurements) {
