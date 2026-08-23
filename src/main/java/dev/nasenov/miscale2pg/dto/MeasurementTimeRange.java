@@ -1,9 +1,10 @@
 package dev.nasenov.miscale2pg.dto;
 
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
-public record MeasurementTimeRange(OffsetDateTime from, OffsetDateTime to) {
+public record MeasurementTimeRange(@NotNull OffsetDateTime from, @NotNull OffsetDateTime to) {
 
   public static MeasurementTimeRange of(OffsetDateTime from, OffsetDateTime to) {
     return new MeasurementTimeRange(from, to);

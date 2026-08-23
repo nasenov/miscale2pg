@@ -15,3 +15,7 @@ management:
     web:
       exposure:
         include: health,prometheus
+
+app:
+  miscale.api:
+    base-url: https://api-mifit.huami.com

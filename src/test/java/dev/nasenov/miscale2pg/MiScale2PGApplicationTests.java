@@ -23,6 +23,11 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.matchers.Times;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,14 +35,20 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.mockserver.MockServerContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -49,6 +60,18 @@ class MiScale2PGApplicationTests {
   @Container @ServiceConnection
   static PostgreSQLContainer postgreSQLContainer =
       new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"));
+
+  @Container
+  static MockServerContainer mockServerContainer =
+      new MockServerContainer(
+          DockerImageName.parse("mockserver/mockserver")
+              .withTag(
+                  "mockserver-" + MockServerClient.class.getPackage().getImplementationVersion()));
+
+  @DynamicPropertySource
+  static void mockServerProperties(DynamicPropertyRegistry registry) {
+    registry.add("app.miscale.api.base-url", mockServerContainer::getEndpoint);
+  }
 
   @Autowired RestTestClient restTestClient;
 
@@ -67,6 +90,152 @@ class MiScale2PGApplicationTests {
   void contextLoads() {}
 
   @Test
+  @DisabledInNativeImage
+  void shouldSyncMeasurementsFromZeppLifeApp() throws IOException {
+    String csv =
+        """
+        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
+        2026-08-21 05:26:04+0000,66.95,180.0,20.6,14.148586,58.89407,2.9257855,1494,54.551735,6.0
+        2026-08-22 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
+        """;
+    String password = "password";
+    String zipPath = "/test.zip";
+    byte[] zipFile = createZipFile(password, csv);
+
+    long userId = 1L;
+    String appToken = "token";
+    String taskId = "143892c5-c60c-47b4-8d70-f84cffda1bf1";
+    String taskPath = "/tasks/" + taskId;
+
+    try (MockServerClient mockServerClient =
+        new MockServerClient(mockServerContainer.getHost(), mockServerContainer.getServerPort())) {
+
+      mockServerClient
+          .when(
+              HttpRequest.request()
+                  .withMethod(HttpMethod.POST.name())
+                  .withPath("/users/" + userId + "/dataExportation")
+                  .withHeader("apptoken", appToken)
+                  .withHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-GB,en;q=0.6"))
+          .respond(
+              HttpResponse.response()
+                  .withStatusCode(HttpStatus.ACCEPTED.value())
+                  .withHeader(HttpHeaders.LOCATION, taskPath));
+
+      mockServerClient
+          .when(
+              HttpRequest.request()
+                  .withMethod(HttpMethod.GET.name())
+                  .withPath(taskPath)
+                  .withHeader("apptoken", appToken),
+              Times.once())
+          .respond(
+              HttpResponse.response()
+                  .withStatusCode(HttpStatus.OK.value())
+                  .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .withBody(
+                      """
+                      {
+                        "userId": "%s",
+                        "taskId": "%s",
+                        "status": 1,
+                        "updateTime": 1787505133212,
+                        "createTime": 1787505132969
+                      }
+                      """
+                          .formatted(userId, taskId)));
+
+      mockServerClient
+          .when(
+              HttpRequest.request()
+                  .withMethod(HttpMethod.GET.name())
+                  .withPath(taskPath)
+                  .withHeader("apptoken", appToken),
+              Times.unlimited())
+          .respond(
+              HttpResponse.response()
+                  .withStatusCode(HttpStatus.OK.value())
+                  .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .withBody(
+                      """
+                      {
+                        "userId": "%s",
+                        "taskId": "%s",
+                        "generatedTime": 1787505133223,
+                        "resource": {
+                          "archiveUrl": "%s",
+                          "dataTypes": [
+                            "BODY"
+                          ],
+                          "expireAt": 86400000,
+                          "password": "%s"
+                        }
+                      }
+                      """
+                          .formatted(
+                              userId,
+                              taskId,
+                              mockServerContainer.getEndpoint() + zipPath,
+                              password)));
+
+      mockServerClient
+          .when(HttpRequest.request().withMethod(HttpMethod.GET.name()).withPath(zipPath))
+          .respond(HttpResponse.response().withStatusCode(HttpStatus.OK.value()).withBody(zipFile));
+
+      restTestClient
+          .post()
+          .uri(
+              uriBuilder ->
+                  uriBuilder
+                      .path("/api/measurements/sync")
+                      .queryParam("userId", userId)
+                      .queryParam("email", "john@example.com")
+                      .queryParam("startDate", "2026-08-16")
+                      .queryParam("endDate", "2026-08-23")
+                      .build())
+          .header("App-Token", appToken)
+          .exchange()
+          .expectStatus()
+          .isCreated()
+          .expectBody()
+          .isEmpty();
+
+      Measurement completeMeasurement =
+          Measurement.builder()
+              .time(OffsetDateTime.parse("2026-08-21T05:26:04Z"))
+              .weight(66.95)
+              .height(180.0)
+              .bmi(20.6)
+              .fatRate(14.15)
+              .bodyWaterRate(58.89)
+              .boneMass(2.93)
+              .metabolism(1494.0)
+              .muscleRate(54.55)
+              .visceralFat(6.0)
+              .build();
+
+      Measurement partialMeasurement =
+          Measurement.builder()
+              .time(OffsetDateTime.parse("2026-08-22T04:33:57Z"))
+              .weight(68.2)
+              .height(180.0)
+              .bmi(21.0)
+              .build();
+
+      Stream.of(completeMeasurement, partialMeasurement)
+          .forEach(
+              measurement ->
+                  assertThat(measurementRepository.findById(measurement.time()))
+                      .isPresent()
+                      .get()
+                      .usingRecursiveComparison()
+                      .isEqualTo(measurement));
+
+      mockServerClient.reset();
+    }
+  }
+
+  @Test
   void shouldSaveMeasurementsWhenPasswordProtectedZipIsUploaded() throws IOException {
     String completeMeasurementCsv =
         """
@@ -80,29 +249,10 @@ class MiScale2PGApplicationTests {
         2026-08-10 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
         """;
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String password = "password";
+    byte[] zipFile = createZipFile(password, completeMeasurementCsv, partialMeasurementCsv);
 
-    try (ZipOutputStream zipOutputStream =
-        new ZipOutputStream(outputStream, password.toCharArray())) {
-
-      ZipParameters zipParameters = new ZipParameters();
-      zipParameters.setEncryptFiles(true);
-      zipParameters.setEncryptionMethod(EncryptionMethod.AES);
-      zipParameters.setFileNameInZip("BODY/BODY_1786265904006.csv");
-
-      zipOutputStream.putNextEntry(zipParameters);
-      zipOutputStream.write(completeMeasurementCsv.getBytes());
-      zipOutputStream.closeEntry();
-
-      zipParameters.setFileNameInZip("BODY/BODY_1786265904007.csv");
-
-      zipOutputStream.putNextEntry(zipParameters);
-      zipOutputStream.write(partialMeasurementCsv.getBytes());
-      zipOutputStream.closeEntry();
-    }
-
-    upload(outputStream.toByteArray(), password).expectStatus().isCreated().expectBody().isEmpty();
+    upload(zipFile, password).expectStatus().isCreated().expectBody().isEmpty();
 
     Measurement completeMeasurement =
         Measurement.builder()
@@ -350,6 +500,27 @@ class MiScale2PGApplicationTests {
               assertThat(measurements).hasSize(1);
               assertThat(measurements.getFirst()).isEqualTo(expected);
             });
+  }
+
+  private byte[] createZipFile(String password, String... csvs) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    try (ZipOutputStream zipOutputStream =
+        new ZipOutputStream(outputStream, password.toCharArray())) {
+
+      ZipParameters zipParameters = new ZipParameters();
+      zipParameters.setEncryptFiles(true);
+      zipParameters.setEncryptionMethod(EncryptionMethod.AES);
+
+      for (int index = 0; index < csvs.length; index++) {
+        zipParameters.setFileNameInZip("BODY/" + index + ".csv");
+        zipOutputStream.putNextEntry(zipParameters);
+        zipOutputStream.write(csvs[index].getBytes());
+        zipOutputStream.closeEntry();
+      }
+    }
+
+    return outputStream.toByteArray();
   }
 
   private RestTestClient.ResponseSpec upload(String csv) {
