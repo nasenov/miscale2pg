@@ -70,6 +70,7 @@ tasks.named<BootBuildImage>("bootBuildImage") {
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   java {
     target("src/*/java/**/*.java")
+    shortenFullyQualifiedTypes()
     importOrder()
     removeUnusedImports()
     forbidWildcardImports()
