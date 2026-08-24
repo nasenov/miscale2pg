@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.3.3](https://github.com/nasenov/miscale2pg/compare/0.3.2...0.3.3) (2026-08-24)
+
+
+### Features
+
+* add renovate custom manager for testcontainers ([f3b653a](https://github.com/nasenov/miscale2pg/commit/f3b653a16f6c6cf5de8dd3cfe28573ea403590de))
+* **container:** update image postgres (18.4 ➔ 18.6) ([#58](https://github.com/nasenov/miscale2pg/issues/58)) ([5670ebf](https://github.com/nasenov/miscale2pg/commit/5670ebf85c126130b4ba9b9474ac01b9d679b8be))
+* **deps:** update plugin com.diffplug.spotless (8.9.0 ➔ 8.10.0) ([#59](https://github.com/nasenov/miscale2pg/issues/59)) ([a48bfdf](https://github.com/nasenov/miscale2pg/commit/a48bfdf8a08df6ac182668e6f0b1d72e4a22052d))
+* zepp life sync ([efdcab7](https://github.com/nasenov/miscale2pg/commit/efdcab71b13c0ce8bd87a7d45e5d66cdd6e75e03))
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.8 ➔ 1.1.9) ([#57](https://github.com/nasenov/miscale2pg/issues/57)) ([e8d9736](https://github.com/nasenov/miscale2pg/commit/e8d9736bc750a9747431bf240fedded8db033ffc))
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.9 ➔ 1.1.10) ([#61](https://github.com/nasenov/miscale2pg/issues/61)) ([57bd422](https://github.com/nasenov/miscale2pg/commit/57bd4220b61f2047bf15b2d6a156b3d47d6beef6))
+* **deps:** update plugin org.springframework.boot (4.1.0 ➔ 4.1.1) ([#62](https://github.com/nasenov/miscale2pg/issues/62)) ([71a764f](https://github.com/nasenov/miscale2pg/commit/71a764f51e190ce687432f135e83a93b71d937ec))
+* let renovate process test files ([5aec6da](https://github.com/nasenov/miscale2pg/commit/5aec6da3434e6d0ed2624129db7c50c43c894d0a))
+
+
+### Build System
+
+* add shortenFullyQualifiedTypes spotless step ([e8a9fbf](https://github.com/nasenov/miscale2pg/commit/e8a9fbf2eb0d991edfb8abbd763b6f3360bfbff1))
+* **gradle:** update gradle (9.7.0 ➔ 9.7.1) ([#60](https://github.com/nasenov/miscale2pg/issues/60)) ([a1f84c3](https://github.com/nasenov/miscale2pg/commit/a1f84c366382592f24e1724f4484f1d64a95786c))
+
+
+### Continuous Integration
+
+* **github-action:** update action renovatebot/github-action (v46.2.1 ➔ v46.2.2) ([#55](https://github.com/nasenov/miscale2pg/issues/55)) ([a5e33e0](https://github.com/nasenov/miscale2pg/commit/a5e33e0ea281c1537be8a159d6a49ae0df00318e))
+* **github-action:** update action renovatebot/github-action (v46.2.2 ➔ v46.2.3) ([#64](https://github.com/nasenov/miscale2pg/issues/64)) ([5a94e77](https://github.com/nasenov/miscale2pg/commit/5a94e773b9fa6812cc51892667213584c874db7d))
+* **github-action:** update action renovatebot/github-action (v46.2.3 ➔ v46.2.4) ([#65](https://github.com/nasenov/miscale2pg/issues/65)) ([0da95c5](https://github.com/nasenov/miscale2pg/commit/0da95c572a466605a04fd3042e4d9d5a14510e99))
+* run renovate every hour ([d092bbd](https://github.com/nasenov/miscale2pg/commit/d092bbde48f489df78153f4a0a460b87d2712c06))
+* use graalvm quick build for nativeTest ([4931635](https://github.com/nasenov/miscale2pg/commit/4931635e668b63f19e89ddbac8d66ef421769418))
+
+
+### Miscellaneous Chores
+
+* update README ([2ace670](https://github.com/nasenov/miscale2pg/commit/2ace670cb9ddcfff691daf25e6a6e93dce97bb78))
+
 ## [0.3.2](https://github.com/nasenov/miscale2pg/compare/0.3.1...0.3.2) (2026-08-10)
 
 
