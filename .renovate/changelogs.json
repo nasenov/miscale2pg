@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      "description": "Changelog URL for spotless",
+      "matchPackageNames": [
+        "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin"
+      ],
+      "changelogUrl": "https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md"
+    }
+  ]
+}

@@ -4,6 +4,7 @@
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigestsToSemver",
+    "github>nasenov/miscale2pg//.renovate/changelogs.json",
     "github>nasenov/miscale2pg//.renovate/customManagers.json",
     "github>nasenov/miscale2pg//.renovate/labels.json",
     "github>nasenov/miscale2pg//.renovate/semanticCommits.json",
