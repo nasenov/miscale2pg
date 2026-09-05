@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.3.4](https://github.com/nasenov/miscale2pg/compare/0.3.3...0.3.4) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update plugin com.diffplug.spotless (8.10.0 ➔ 8.10.1) ([#66](https://github.com/nasenov/miscale2pg/issues/66)) ([a567d88](https://github.com/nasenov/miscale2pg/commit/a567d88775bd6cce4ee589cc92846836d5acc07f))
+* **deps:** update plugin com.diffplug.spotless (8.10.0 ➔ 8.10.1) ([#68](https://github.com/nasenov/miscale2pg/issues/68)) ([fbe5099](https://github.com/nasenov/miscale2pg/commit/fbe5099f6073ca111f46565cd8199c248e0e56c8))
+* **deps:** update plugin com.diffplug.spotless (8.10.1 ➔ 8.10.2) ([#74](https://github.com/nasenov/miscale2pg/issues/74)) ([8186827](https://github.com/nasenov/miscale2pg/commit/818682773871198553632019c84bd6bd2ccdd23b))
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.10 ➔ 1.1.11) ([#69](https://github.com/nasenov/miscale2pg/issues/69)) ([18c0be9](https://github.com/nasenov/miscale2pg/commit/18c0be9e02b0182ac602e3201ceade14dd073550))
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.11 ➔ 1.1.12) ([#73](https://github.com/nasenov/miscale2pg/issues/73)) ([b44c42f](https://github.com/nasenov/miscale2pg/commit/b44c42f0e9b6960dc9abec78856afffd40e62055))
+
+
+### Continuous Integration
+
+* **github-action:** update action graalvm/setup-graalvm (v1.6.4 ➔ v1.6.5) ([#71](https://github.com/nasenov/miscale2pg/issues/71)) ([c73ee83](https://github.com/nasenov/miscale2pg/commit/c73ee833b6822ca96fba493d8330c9d184a1c0b5))
+* **github-action:** update action graalvm/setup-graalvm (v1.6.5 ➔ v1.6.6) ([#72](https://github.com/nasenov/miscale2pg/issues/72)) ([53179e0](https://github.com/nasenov/miscale2pg/commit/53179e04f9a576190fd77c3848677506ed3f8495))
+* **github-action:** update action renovatebot/github-action (v46.2.4 ➔ v46.2.5) ([#70](https://github.com/nasenov/miscale2pg/issues/70)) ([7bc14ab](https://github.com/nasenov/miscale2pg/commit/7bc14ab8991cd44af1bd6d048daf8671a7424316))
+
+
+### Miscellaneous Chores
+
+* add spotless changelog url in renovate PRs ([da12078](https://github.com/nasenov/miscale2pg/commit/da120784a3ad830aae5da0bb7fc9f8b34c9a2ca9))
+
 ## [0.3.3](https://github.com/nasenov/miscale2pg/compare/0.3.2...0.3.3) (2026-08-24)
 
 
