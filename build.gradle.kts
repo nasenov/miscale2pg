@@ -53,6 +53,7 @@ graalvmNative {
   binaries {
     named("test") {
       quickBuild.set(true)
+      buildArgs.add("--initialize-at-build-time=io.github.classgraph.vfs.VfsFileSystemProvider")
     }
   }
 }
