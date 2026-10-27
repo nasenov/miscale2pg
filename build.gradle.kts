@@ -41,7 +41,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-postgresql")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
   testImplementation("org.testcontainers:testcontainers-mockserver")
-  testImplementation("org.mock-server:mockserver-client-java:9.1.0")
+  testImplementation("org.mock-server:mockserver-client-java:9.2.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
