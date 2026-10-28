@@ -10,17 +10,13 @@ import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import dev.nasenov.miscale2pg.service.MeasurementService;
-import java.io.ByteArrayOutputStream;
+import dev.nasenov.miscale2pg.util.ZipFileUtils;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
-import net.lingala.zip4j.io.outputstream.ZipOutputStream;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
@@ -33,19 +29,15 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mockserver.MockServerContainer;
@@ -98,9 +90,8 @@ class MiScale2PGApplicationTests {
         2026-08-21 05:26:04+0000,66.95,180.0,20.6,14.148586,58.89407,2.9257855,1494,54.551735,6.0
         2026-08-22 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
         """;
-    String password = "password";
     String zipPath = "/test.zip";
-    byte[] zipFile = createZipFile(password, csv);
+    byte[] zipFile = ZipFileUtils.create(csv);
 
     long userId = 1L;
     String appToken = "token";
@@ -176,7 +167,7 @@ class MiScale2PGApplicationTests {
                               userId,
                               taskId,
                               mockServerContainer.getEndpoint() + zipPath,
-                              password)));
+                              ZipFileUtils.PASSWORD)));
 
       mockServerClient
           .when(HttpRequest.request().withMethod(HttpMethod.GET.name()).withPath(zipPath))
@@ -236,132 +227,6 @@ class MiScale2PGApplicationTests {
   }
 
   @Test
-  void shouldSaveMeasurementsWhenPasswordProtectedZipIsUploaded() throws IOException {
-    String completeMeasurementCsv =
-        """
-        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        2026-08-09 05:26:04+0000,66.95,180.0,20.6,14.148586,58.89407,2.9257855,1494,54.551735,6.0
-        """;
-
-    String partialMeasurementCsv =
-        """
-        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        2026-08-10 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
-        """;
-
-    String password = "password";
-    byte[] zipFile = createZipFile(password, completeMeasurementCsv, partialMeasurementCsv);
-
-    upload(zipFile, password).expectStatus().isCreated().expectBody().isEmpty();
-
-    Measurement completeMeasurement =
-        Measurement.builder()
-            .time(OffsetDateTime.parse("2026-08-09T05:26:04Z"))
-            .weight(66.95)
-            .height(180.0)
-            .bmi(20.6)
-            .fatRate(14.15)
-            .bodyWaterRate(58.89)
-            .boneMass(2.93)
-            .metabolism(1494.0)
-            .muscleRate(54.55)
-            .visceralFat(6.0)
-            .build();
-
-    Measurement partialMeasurement =
-        Measurement.builder()
-            .time(OffsetDateTime.parse("2026-08-10T04:33:57Z"))
-            .weight(68.2)
-            .height(180.0)
-            .bmi(21.0)
-            .build();
-
-    Stream.of(completeMeasurement, partialMeasurement)
-        .forEach(
-            measurement ->
-                assertThat(measurementRepository.findById(measurement.time()))
-                    .isPresent()
-                    .get()
-                    .usingRecursiveComparison()
-                    .isEqualTo(measurement));
-  }
-
-  @Test
-  void shouldSaveCompleteAndPartialMeasurementsWhenCsvIsUploaded() {
-    String csv =
-        """
-        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        2026-06-23 07:35:53+0000,67.8,180.0,20.9,14.422834,58.705936,2.9538348,1516.0,55.067486,6.0
-        2026-06-24 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
-        """;
-
-    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
-
-    Measurement completeMeasurement =
-        Measurement.builder()
-            .time(OffsetDateTime.parse("2026-06-23T07:35:53Z"))
-            .weight(67.8)
-            .height(180.0)
-            .bmi(20.9)
-            .fatRate(14.42)
-            .bodyWaterRate(58.71)
-            .boneMass(2.95)
-            .metabolism(1516.0)
-            .muscleRate(55.07)
-            .visceralFat(6.0)
-            .build();
-
-    Measurement partialMeasurement =
-        Measurement.builder()
-            .time(OffsetDateTime.parse("2026-06-24T04:33:57Z"))
-            .weight(68.2)
-            .height(180.0)
-            .bmi(21.0)
-            .build();
-
-    Stream.of(completeMeasurement, partialMeasurement)
-        .forEach(
-            measurement ->
-                assertThat(measurementRepository.findById(measurement.time()))
-                    .isPresent()
-                    .get()
-                    .usingRecursiveComparison()
-                    .isEqualTo(measurement));
-  }
-
-  @Test
-  void shouldSaveMeasurementsWhenCsvWithDuplicatesIsUploaded() {
-    String csv =
-        """
-        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        2026-06-25 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
-        2026-06-25 04:33:57+0000,67.8,180.0,20.9,14.422834,58.705936,2.9538348,1516.0,55.067486,6.0
-        """;
-
-    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
-
-    Measurement measurement =
-        Measurement.builder()
-            .time(OffsetDateTime.parse("2026-06-25T04:33:57Z"))
-            .weight(67.8)
-            .height(180.0)
-            .bmi(20.9)
-            .fatRate(14.42)
-            .bodyWaterRate(58.71)
-            .boneMass(2.95)
-            .metabolism(1516.0)
-            .muscleRate(55.07)
-            .visceralFat(6.0)
-            .build();
-
-    assertThat(measurementRepository.findById(measurement.time()))
-        .isPresent()
-        .get()
-        .usingRecursiveComparison()
-        .isEqualTo(measurement);
-  }
-
-  @Test
   void shouldNotSaveAnyMeasurementsWhenOneMeasurementSaveFails() {
     MiScaleMeasurement valid =
         MiScaleMeasurement.builder()
@@ -391,33 +256,60 @@ class MiScale2PGApplicationTests {
   }
 
   @Test
-  void shouldReturnContentTooLargeWhenCsvFileGreaterThanMaxFileSizeIsUploaded() {
-    String csv = "a".repeat(2 * 1024 * 1024); // 2 MiB
-
-    upload(csv)
-        .expectStatus()
-        .isEqualTo(HttpStatus.CONTENT_TOO_LARGE)
-        .expectBody(ProblemDetail.class)
-        .value(
-            response -> {
-              assertThat(response).isNotNull();
-              assertThat(response.getStatus()).isEqualTo(HttpStatus.CONTENT_TOO_LARGE.value());
-              assertThat(response.getDetail()).isEqualTo("Maximum upload size exceeded");
-            });
-  }
-
-  @Test
   void shouldReturnOnlyMeasurementsBetweenTheTimeRange() {
-    String csv =
-        """
-      time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-      2026-06-29 07:15:42+0000,66.8,180,20.6,13.93635,59.039665,2.9264562,1501,54.564064,6
-      2026-06-30 04:34:46+0000,68.75,180,21.2,14.906007,58.374477,2.9786344,1530,55.523487,7
-      2026-07-04 07:20:14+0000,68.35,180,21,15.022793,58.294365,2.9569604,1515,55.124958,7
-      2026-07-05 07:34:47+0000,68.1,180,21,14.918178,58.36613,2.9496775,1511,54.991043,7
-      """;
+    List<MiScaleMeasurement> miScaleMeasurements =
+        List.of(
+            MiScaleMeasurement.builder()
+                .time(OffsetDateTime.parse("2026-06-29T07:15:42Z"))
+                .weight(66.8)
+                .height(180.0)
+                .bmi(20.6)
+                .fatRate(13.93635)
+                .bodyWaterRate(59.039665)
+                .boneMass(2.9264562)
+                .metabolism(1501.0)
+                .muscleRate(54.564064)
+                .visceralFat(6.0)
+                .build(),
+            MiScaleMeasurement.builder()
+                .time(OffsetDateTime.parse("2026-06-30T04:34:46Z"))
+                .weight(68.75)
+                .height(180.0)
+                .bmi(21.2)
+                .fatRate(14.906007)
+                .bodyWaterRate(58.374477)
+                .boneMass(2.9786344)
+                .metabolism(1530.0)
+                .muscleRate(55.523487)
+                .visceralFat(7.0)
+                .build(),
+            MiScaleMeasurement.builder()
+                .time(OffsetDateTime.parse("2026-07-04T07:20:14Z"))
+                .weight(68.35)
+                .height(180.0)
+                .bmi(21.0)
+                .fatRate(15.022793)
+                .bodyWaterRate(58.294365)
+                .boneMass(2.9569604)
+                .metabolism(1515.0)
+                .muscleRate(55.124958)
+                .visceralFat(7.0)
+                .build(),
+            MiScaleMeasurement.builder()
+                .time(OffsetDateTime.parse("2026-07-05T07:34:47Z"))
+                .weight(68.1)
+                .height(180.0)
+                .bmi(21.0)
+                .fatRate(14.918178)
+                .bodyWaterRate(58.36613)
+                .boneMass(2.9496775)
+                .metabolism(1511.0)
+                .muscleRate(54.991043)
+                .visceralFat(7.0)
+                .build());
 
-    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
+    measurementService.save(
+        MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(miScaleMeasurements))));
 
     MeasurementResponse expected =
         MeasurementResponse.builder()
@@ -457,20 +349,39 @@ class MiScale2PGApplicationTests {
 
   @Test
   void shouldReturnMeasurementsFromLast30DaysWhenNoTimeRangeIsProvided() {
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXX");
     OffsetDateTime recent =
         OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).truncatedTo(ChronoUnit.SECONDS);
     OffsetDateTime old =
         OffsetDateTime.now(ZoneOffset.UTC).minusDays(40).truncatedTo(ChronoUnit.SECONDS);
-    String csv =
-        """
-        time,weight,height,bmi,fatRate,bodyWaterRate,boneMass,metabolism,muscleRate,visceralFat
-        %s,68.75,180,21.2,14.906007,58.374477,2.9786344,1530,55.523487,7
-        %s,66.8,180,20.6,13.93635,59.039665,2.9264562,1501,54.564064,6
-        """
-            .formatted(dateTimeFormatter.format(recent), dateTimeFormatter.format(old));
+    List<MiScaleMeasurement> miScaleMeasurements =
+        List.of(
+            MiScaleMeasurement.builder()
+                .time(recent)
+                .weight(68.75)
+                .height(180.0)
+                .bmi(21.2)
+                .fatRate(14.906007)
+                .bodyWaterRate(58.374477)
+                .boneMass(2.9786344)
+                .metabolism(1530.0)
+                .muscleRate(55.523487)
+                .visceralFat(7.0)
+                .build(),
+            MiScaleMeasurement.builder()
+                .time(old)
+                .weight(66.8)
+                .height(180.0)
+                .bmi(20.6)
+                .fatRate(13.93635)
+                .bodyWaterRate(59.039665)
+                .boneMass(2.9264562)
+                .metabolism(1501.0)
+                .muscleRate(54.564064)
+                .visceralFat(6.0)
+                .build());
 
-    upload(csv).expectStatus().isCreated().expectBody().isEmpty();
+    measurementService.save(
+        MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(miScaleMeasurements))));
 
     MeasurementResponse expected =
         MeasurementResponse.builder()
@@ -500,59 +411,5 @@ class MiScale2PGApplicationTests {
               assertThat(measurements).hasSize(1);
               assertThat(measurements.getFirst()).isEqualTo(expected);
             });
-  }
-
-  private byte[] createZipFile(String password, String... csvs) throws IOException {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-    try (ZipOutputStream zipOutputStream =
-        new ZipOutputStream(outputStream, password.toCharArray())) {
-
-      ZipParameters zipParameters = new ZipParameters();
-      zipParameters.setEncryptFiles(true);
-      zipParameters.setEncryptionMethod(EncryptionMethod.AES);
-
-      for (int index = 0; index < csvs.length; index++) {
-        zipParameters.setFileNameInZip("BODY/" + index + ".csv");
-        zipOutputStream.putNextEntry(zipParameters);
-        zipOutputStream.write(csvs[index].getBytes());
-        zipOutputStream.closeEntry();
-      }
-    }
-
-    return outputStream.toByteArray();
-  }
-
-  private RestTestClient.ResponseSpec upload(String csv) {
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new ByteArrayResource(csv.getBytes()) {
-          @Override
-          public String getFilename() {
-            return "measurements.csv";
-          }
-        });
-
-    return upload(body);
-  }
-
-  private RestTestClient.ResponseSpec upload(byte[] zip, String password) {
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add(
-        "file",
-        new ByteArrayResource(zip) {
-          @Override
-          public String getFilename() {
-            return "7015641973_1786265904066.zip";
-          }
-        });
-    body.add("password", password);
-
-    return upload(body);
-  }
-
-  private RestTestClient.ResponseSpec upload(MultiValueMap<String, Object> body) {
-    return restTestClient.post().uri("/api/measurements").body(body).exchange();
   }
 }
