@@ -17,5 +17,8 @@ management:
         include: health,prometheus
 
 app:
-  miscale.api:
+  zepp-life:
     base-url: https://api-mifit.huami.com
+    app-token: ${APP_ZEPP_LIFE_APP_TOKEN:}
+    user-id: ${APP_ZEPP_LIFE_USER_ID:}
+    email: ${APP_ZEPP_LIFE_EMAIL:}

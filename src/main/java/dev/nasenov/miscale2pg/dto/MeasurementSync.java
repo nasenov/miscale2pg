@@ -1,25 +1,17 @@
 package dev.nasenov.miscale2pg.dto;
 
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-public record MeasurementSync(
-    @NotBlank String appToken,
-    @NotBlank String userId,
-    @NotNull @Email String email,
-    @NotNull LocalDate startDate,
-    @NotNull LocalDate endDate) {
+public record MeasurementSync(@NotNull LocalDate from, @NotNull LocalDate to) {
 
-  public static MeasurementSync of(
-      String appToken, String userId, String email, LocalDate startDate, LocalDate endDate) {
-    return new MeasurementSync(appToken, userId, email, startDate, endDate);
+  public static MeasurementSync of(LocalDate from, LocalDate to) {
+    return new MeasurementSync(from, to);
   }
 
-  @AssertTrue(message = "'startDate' must be before or equal to 'endDate'")
+  @AssertTrue(message = "'from' must be before or equal to 'to'")
   public boolean isDateRange() {
-    return startDate.isBefore(endDate) || startDate.isEqual(endDate);
+    return from.isBefore(to) || from.isEqual(to);
   }
 }

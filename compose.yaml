@@ -19,6 +19,9 @@ services:
       database:
         condition: service_healthy
     environment:
+      APP_ZEPP_LIFE_APP_TOKEN: ${APP_ZEPP_LIFE_APP_TOKEN}
+      APP_ZEPP_LIFE_USER_ID: ${APP_ZEPP_LIFE_USER_ID}
+      APP_ZEPP_LIFE_EMAIL: ${APP_ZEPP_LIFE_EMAIL}
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
     ports:

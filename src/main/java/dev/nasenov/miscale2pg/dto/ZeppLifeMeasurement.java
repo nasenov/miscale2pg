@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import lombok.Builder;
 
 @Builder
-public record MiScaleMeasurement(
+public record ZeppLifeMeasurement(
     @Past @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ssXX") OffsetDateTime time,
     @DecimalMin(value = "5.0") @DecimalMax(value = "150.0") double weight,
     @DecimalMin(value = "90.0") @DecimalMax(value = "220.0") double height,

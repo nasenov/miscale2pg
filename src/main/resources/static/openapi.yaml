@@ -2,7 +2,7 @@ openapi: 3.2.0
 
 info:
   title: miscale2pg API
-  version: 0.3.0
+  version: 0.4.0
   summary: Import Mi Body Composition Scale 2 measurements into PostgreSQL
   license:
     name: MIT
@@ -61,48 +61,27 @@ paths:
       tags:
         - measurements
       parameters:
-        - name: App-Token
-          in: header
-          description: >-
-            Mi Fit / Zepp Life API authentication token
-          required: true
-          schema:
-            type: string
-        - name: userId
-          in: query
-          description: Mi Fit / Zepp Life user id
-          required: true
-          schema:
-            type: string
-        - name: email
+        - name: from
           in: query
           description: >-
-            Email address associated with the Mi Fit / Zepp Life account
-          required: true
-          schema:
-            type: string
-            format: email
-        - name: startDate
-          in: query
-          description: >-
-            If omitted, the date of the latest measurement already stored in the
-            database is used. If the database is empty, endDate - 30 days date is used
+            Defaults to the date of the latest measurement already stored in the
+            database, or to 30 days before `to` if the database is empty
           required: false
           schema:
             type: string
             format: date
           example: "2026-08-10"
-        - name: endDate
+        - name: to
           in: query
           description: >-
-            If omitted, today date is used
+            Defaults to today
           required: false
           schema:
             type: string
             format: date
           example: "2026-08-17"
       responses:
-        "201":
+        "200":
           description: Successful sync
 
   /actuator/health:

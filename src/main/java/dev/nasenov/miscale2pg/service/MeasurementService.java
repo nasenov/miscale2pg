@@ -2,8 +2,8 @@ package dev.nasenov.miscale2pg.service;
 
 import dev.nasenov.miscale2pg.dto.MeasurementResponse;
 import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
+import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurement;
+import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurementExport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import java.time.LocalDate;
@@ -34,8 +34,8 @@ public class MeasurementService {
   }
 
   @Transactional
-  public void save(MiScaleMeasurementImport miScaleMeasurementImport) {
-    miScaleMeasurementImport
+  public void save(ZeppLifeMeasurementExport zeppLifeMeasurementExport) {
+    zeppLifeMeasurementExport
         .csvs()
         .forEach(
             csv ->
@@ -58,18 +58,18 @@ public class MeasurementService {
         .build();
   }
 
-  private static Measurement convert(MiScaleMeasurement miScaleMeasurement) {
+  private static Measurement convert(ZeppLifeMeasurement zeppLifeMeasurement) {
     return Measurement.builder()
-        .time(miScaleMeasurement.time())
-        .weight(miScaleMeasurement.weight())
-        .height(miScaleMeasurement.height())
-        .bmi(miScaleMeasurement.bmi())
-        .fatRate(miScaleMeasurement.fatRate())
-        .bodyWaterRate(miScaleMeasurement.bodyWaterRate())
-        .boneMass(miScaleMeasurement.boneMass())
-        .metabolism(miScaleMeasurement.metabolism())
-        .muscleRate(miScaleMeasurement.muscleRate())
-        .visceralFat(miScaleMeasurement.visceralFat())
+        .time(zeppLifeMeasurement.time())
+        .weight(zeppLifeMeasurement.weight())
+        .height(zeppLifeMeasurement.height())
+        .bmi(zeppLifeMeasurement.bmi())
+        .fatRate(zeppLifeMeasurement.fatRate())
+        .bodyWaterRate(zeppLifeMeasurement.bodyWaterRate())
+        .boneMass(zeppLifeMeasurement.boneMass())
+        .metabolism(zeppLifeMeasurement.metabolism())
+        .muscleRate(zeppLifeMeasurement.muscleRate())
+        .visceralFat(zeppLifeMeasurement.visceralFat())
         .build();
   }
 }

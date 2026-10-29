@@ -4,19 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.nasenov.miscale2pg.dto.MeasurementResponse;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurement;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementCsv;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
+import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurement;
+import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurementCsv;
+import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurementExport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import dev.nasenov.miscale2pg.service.MeasurementService;
-import dev.nasenov.miscale2pg.util.ZipFileUtils;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
@@ -49,6 +52,12 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class MiScale2PGApplicationTests {
 
+  static final String APP_TOKEN = "token";
+
+  static final long USER_ID = 1L;
+
+  static final String ZIP_PASSWORD = "password";
+
   @Container @ServiceConnection
   static PostgreSQLContainer postgreSQLContainer =
       new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"));
@@ -62,7 +71,10 @@ class MiScale2PGApplicationTests {
 
   @DynamicPropertySource
   static void mockServerProperties(DynamicPropertyRegistry registry) {
-    registry.add("app.miscale.api.base-url", mockServerContainer::getEndpoint);
+    registry.add("app.zepp-life.base-url", mockServerContainer::getEndpoint);
+    registry.add("app.zepp-life.app-token", () -> APP_TOKEN);
+    registry.add("app.zepp-life.user-id", () -> USER_ID);
+    registry.add("app.zepp-life.email", () -> "john@example.com");
   }
 
   @Autowired RestTestClient restTestClient;
@@ -91,10 +103,8 @@ class MiScale2PGApplicationTests {
         2026-08-22 04:33:57+0000,68.2,180.0,21.0,null,null,null,null,null,null
         """;
     String zipPath = "/test.zip";
-    byte[] zipFile = ZipFileUtils.create(csv);
+    byte[] zipFile = createZip(csv);
 
-    long userId = 1L;
-    String appToken = "token";
     String taskId = "143892c5-c60c-47b4-8d70-f84cffda1bf1";
     String taskPath = "/tasks/" + taskId;
 
@@ -105,8 +115,8 @@ class MiScale2PGApplicationTests {
           .when(
               HttpRequest.request()
                   .withMethod(HttpMethod.POST.name())
-                  .withPath("/users/" + userId + "/dataExportation")
-                  .withHeader("apptoken", appToken)
+                  .withPath("/users/" + USER_ID + "/dataExportation")
+                  .withHeader("apptoken", APP_TOKEN)
                   .withHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-GB,en;q=0.6"))
           .respond(
               HttpResponse.response()
@@ -118,7 +128,7 @@ class MiScale2PGApplicationTests {
               HttpRequest.request()
                   .withMethod(HttpMethod.GET.name())
                   .withPath(taskPath)
-                  .withHeader("apptoken", appToken),
+                  .withHeader("apptoken", APP_TOKEN),
               Times.once())
           .respond(
               HttpResponse.response()
@@ -134,14 +144,14 @@ class MiScale2PGApplicationTests {
                         "createTime": 1787505132969
                       }
                       """
-                          .formatted(userId, taskId)));
+                          .formatted(USER_ID, taskId)));
 
       mockServerClient
           .when(
               HttpRequest.request()
                   .withMethod(HttpMethod.GET.name())
                   .withPath(taskPath)
-                  .withHeader("apptoken", appToken),
+                  .withHeader("apptoken", APP_TOKEN),
               Times.unlimited())
           .respond(
               HttpResponse.response()
@@ -164,10 +174,10 @@ class MiScale2PGApplicationTests {
                       }
                       """
                           .formatted(
-                              userId,
+                              USER_ID,
                               taskId,
                               mockServerContainer.getEndpoint() + zipPath,
-                              ZipFileUtils.PASSWORD)));
+                              ZIP_PASSWORD)));
 
       mockServerClient
           .when(HttpRequest.request().withMethod(HttpMethod.GET.name()).withPath(zipPath))
@@ -179,15 +189,12 @@ class MiScale2PGApplicationTests {
               uriBuilder ->
                   uriBuilder
                       .path("/api/measurements/sync")
-                      .queryParam("userId", userId)
-                      .queryParam("email", "john@example.com")
-                      .queryParam("startDate", "2026-08-16")
-                      .queryParam("endDate", "2026-08-23")
+                      .queryParam("from", "2026-08-16")
+                      .queryParam("to", "2026-08-23")
                       .build())
-          .header("App-Token", appToken)
           .exchange()
           .expectStatus()
-          .isCreated()
+          .isOk()
           .expectBody()
           .isEmpty();
 
@@ -228,8 +235,8 @@ class MiScale2PGApplicationTests {
 
   @Test
   void shouldNotSaveAnyMeasurementsWhenOneMeasurementSaveFails() {
-    MiScaleMeasurement valid =
-        MiScaleMeasurement.builder()
+    ZeppLifeMeasurement valid =
+        ZeppLifeMeasurement.builder()
             .time(OffsetDateTime.now())
             .weight(67.8)
             .height(180.0)
@@ -242,24 +249,24 @@ class MiScale2PGApplicationTests {
             .visceralFat(6.0)
             .build();
 
-    MiScaleMeasurement invalid = MiScaleMeasurement.builder().time(null).build();
+    ZeppLifeMeasurement invalid = ZeppLifeMeasurement.builder().time(null).build();
 
-    List<MiScaleMeasurement> miScaleMeasurements = List.of(valid, invalid);
+    List<ZeppLifeMeasurement> zeppLifeMeasurements = List.of(valid, invalid);
 
     assertThatThrownBy(
             () ->
                 measurementService.save(
-                    MiScaleMeasurementImport.of(
-                        List.of(MiScaleMeasurementCsv.of(miScaleMeasurements)))))
+                    ZeppLifeMeasurementExport.of(
+                        List.of(ZeppLifeMeasurementCsv.of(zeppLifeMeasurements)))))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThat(measurementRepository.findById(valid.time())).isNotPresent();
   }
 
   @Test
   void shouldReturnOnlyMeasurementsBetweenTheTimeRange() {
-    List<MiScaleMeasurement> miScaleMeasurements =
+    List<ZeppLifeMeasurement> zeppLifeMeasurements =
         List.of(
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(OffsetDateTime.parse("2026-06-29T07:15:42Z"))
                 .weight(66.8)
                 .height(180.0)
@@ -271,7 +278,7 @@ class MiScale2PGApplicationTests {
                 .muscleRate(54.564064)
                 .visceralFat(6.0)
                 .build(),
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(OffsetDateTime.parse("2026-06-30T04:34:46Z"))
                 .weight(68.75)
                 .height(180.0)
@@ -283,7 +290,7 @@ class MiScale2PGApplicationTests {
                 .muscleRate(55.523487)
                 .visceralFat(7.0)
                 .build(),
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(OffsetDateTime.parse("2026-07-04T07:20:14Z"))
                 .weight(68.35)
                 .height(180.0)
@@ -295,7 +302,7 @@ class MiScale2PGApplicationTests {
                 .muscleRate(55.124958)
                 .visceralFat(7.0)
                 .build(),
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(OffsetDateTime.parse("2026-07-05T07:34:47Z"))
                 .weight(68.1)
                 .height(180.0)
@@ -309,7 +316,7 @@ class MiScale2PGApplicationTests {
                 .build());
 
     measurementService.save(
-        MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(miScaleMeasurements))));
+        ZeppLifeMeasurementExport.of(List.of(ZeppLifeMeasurementCsv.of(zeppLifeMeasurements))));
 
     MeasurementResponse expected =
         MeasurementResponse.builder()
@@ -353,9 +360,9 @@ class MiScale2PGApplicationTests {
         OffsetDateTime.now(ZoneOffset.UTC).minusDays(1).truncatedTo(ChronoUnit.SECONDS);
     OffsetDateTime old =
         OffsetDateTime.now(ZoneOffset.UTC).minusDays(40).truncatedTo(ChronoUnit.SECONDS);
-    List<MiScaleMeasurement> miScaleMeasurements =
+    List<ZeppLifeMeasurement> zeppLifeMeasurements =
         List.of(
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(recent)
                 .weight(68.75)
                 .height(180.0)
@@ -367,7 +374,7 @@ class MiScale2PGApplicationTests {
                 .muscleRate(55.523487)
                 .visceralFat(7.0)
                 .build(),
-            MiScaleMeasurement.builder()
+            ZeppLifeMeasurement.builder()
                 .time(old)
                 .weight(66.8)
                 .height(180.0)
@@ -381,7 +388,7 @@ class MiScale2PGApplicationTests {
                 .build());
 
     measurementService.save(
-        MiScaleMeasurementImport.of(List.of(MiScaleMeasurementCsv.of(miScaleMeasurements))));
+        ZeppLifeMeasurementExport.of(List.of(ZeppLifeMeasurementCsv.of(zeppLifeMeasurements))));
 
     MeasurementResponse expected =
         MeasurementResponse.builder()
@@ -411,5 +418,23 @@ class MiScale2PGApplicationTests {
               assertThat(measurements).hasSize(1);
               assertThat(measurements.getFirst()).isEqualTo(expected);
             });
+  }
+
+  private static byte[] createZip(String csv) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    try (ZipOutputStream zipOutputStream =
+        new ZipOutputStream(outputStream, ZIP_PASSWORD.toCharArray())) {
+      ZipParameters zipParameters = new ZipParameters();
+      zipParameters.setEncryptFiles(true);
+      zipParameters.setEncryptionMethod(EncryptionMethod.AES);
+      zipParameters.setFileNameInZip("BODY/measurements.csv");
+
+      zipOutputStream.putNextEntry(zipParameters);
+      zipOutputStream.write(csv.getBytes());
+      zipOutputStream.closeEntry();
+    }
+
+    return outputStream.toByteArray();
   }
 }

@@ -3,10 +3,9 @@ package dev.nasenov.miscale2pg.controller;
 import dev.nasenov.miscale2pg.dto.MeasurementSync;
 import dev.nasenov.miscale2pg.dto.MeasurementTimeRange;
 import dev.nasenov.miscale2pg.dto.MeasurementViolation;
-import dev.nasenov.miscale2pg.dto.MiScaleMeasurementImport;
-import dev.nasenov.miscale2pg.exception.MiScaleUnauthorizedException;
+import dev.nasenov.miscale2pg.exception.ZeppLifeException;
 import dev.nasenov.miscale2pg.service.MeasurementService;
-import dev.nasenov.miscale2pg.service.MiScaleClientService;
+import dev.nasenov.miscale2pg.service.ZeppLifeService;
 import jakarta.validation.Validator;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +36,14 @@ import tools.jackson.dataformat.csv.CsvReadException;
 @RequiredArgsConstructor
 public class MeasurementController {
 
+  private static final String INTERNAL_SERVER_ERROR_DETAIL =
+      "An unexpected error occurred. Please try again later.";
+
   private final Validator validator;
 
   private final MeasurementService measurementService;
 
-  private final MiScaleClientService miScaleClientService;
+  private final ZeppLifeService zeppLifeService;
 
   @GetMapping
   public ResponseEntity<?> findByTimeRange(
@@ -61,14 +62,9 @@ public class MeasurementController {
 
   @PostMapping("/sync")
   public ResponseEntity<?> sync(
-      @RequestHeader("App-Token") String appToken,
-      @RequestParam String userId,
-      @RequestParam String email,
-      @RequestParam Optional<LocalDate> startDate,
-      @RequestParam Optional<LocalDate> endDate)
+      @RequestParam Optional<LocalDate> from, @RequestParam Optional<LocalDate> to)
       throws IOException {
-    MeasurementSync measurementSync =
-        buildMeasurementSync(appToken, userId, email, startDate, endDate);
+    MeasurementSync measurementSync = buildMeasurementSync(from, to);
 
     List<MeasurementViolation> violations =
         validator.validate(measurementSync).stream().map(MeasurementViolation::from).toList();
@@ -77,30 +73,16 @@ public class MeasurementController {
       return buildMeasurementViolationsResponse("Invalid measurement sync request.", violations);
     }
 
-    MiScaleMeasurementImport measurementsImport = miScaleClientService.sync(measurementSync);
+    zeppLifeService.sync(measurementSync);
 
-    List<MeasurementViolation> importViolations =
-        validator.validate(measurementsImport).stream().map(MeasurementViolation::from).toList();
-
-    if (!importViolations.isEmpty()) {
-      log.error("CSV file(s) could not be validated: {}", importViolations);
-      return ResponseEntity.internalServerError()
-          .body(
-              ProblemDetail.forStatusAndDetail(
-                  HttpStatus.INTERNAL_SERVER_ERROR,
-                  "An unexpected error occurred. Please try again later."));
-    }
-
-    measurementService.save(measurementsImport);
-
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.ok().build();
   }
 
-  @ExceptionHandler(MiScaleUnauthorizedException.class)
-  public ProblemDetail handleMiScaleUnauthorizedException(MiScaleUnauthorizedException ex) {
-    log.error("Failed tp authenticate", ex);
+  @ExceptionHandler(ZeppLifeException.class)
+  public ProblemDetail handleZeppLifeException(ZeppLifeException ex) {
+    log.error("Zepp Life exception", ex);
     return ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, "Unable to authenticate with the provided App-Token header value.");
+        HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
   }
 
   @ExceptionHandler(HttpClientErrorException.TooManyRequests.class)
@@ -115,21 +97,21 @@ public class MeasurementController {
   public ProblemDetail handleRestClientException(RestClientException ex) {
     log.error("Rest client exception", ex);
     return ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+        HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
   }
 
   @ExceptionHandler({CsvReadException.class, MismatchedInputException.class, IOException.class})
   public ProblemDetail handleFileException(Exception ex) {
     log.error("Failed to read file", ex);
     return ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+        HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
   }
 
   @ExceptionHandler(DataAccessException.class)
   public ProblemDetail handleDataAccessException(DataAccessException ex) {
     log.error("Database exception", ex);
     return ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+        HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
   }
 
   private MeasurementTimeRange buildMeasurementTimeRange(
@@ -144,21 +126,16 @@ public class MeasurementController {
     return MeasurementTimeRange.of(effectiveFrom, effectiveTo);
   }
 
-  private MeasurementSync buildMeasurementSync(
-      String appToken,
-      String userId,
-      String email,
-      Optional<LocalDate> startDate,
-      Optional<LocalDate> endDate) {
-    LocalDate effectiveEndDate = endDate.orElseGet(LocalDate::now);
-    LocalDate effectiveStartDate =
-        startDate.orElseGet(
+  private MeasurementSync buildMeasurementSync(Optional<LocalDate> from, Optional<LocalDate> to) {
+    LocalDate effectiveTo = to.orElseGet(LocalDate::now);
+    LocalDate effectiveFrom =
+        from.orElseGet(
             () ->
                 measurementService
                     .findLatestMeasurementDate()
-                    .orElseGet(() -> effectiveEndDate.minusDays(30)));
+                    .orElseGet(() -> effectiveTo.minusDays(30)));
 
-    return MeasurementSync.of(appToken, userId, email, effectiveStartDate, effectiveEndDate);
+    return MeasurementSync.of(effectiveFrom, effectiveTo);
   }
 
   private ResponseEntity<ProblemDetail> buildMeasurementViolationsResponse(

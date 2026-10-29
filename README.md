@@ -18,6 +18,9 @@ This starts PostgreSQL and `miscale2pg` (pulled from `ghcr.io/nasenov/miscale2pg
 
 | Environment Variable         | Default | Description                         |
 | ---------------------------- | ------- | ----------------------------------- |
+| `APP_ZEPP_LIFE_APP_TOKEN`    | -       | Zepp Life API authentication token  |
+| `APP_ZEPP_LIFE_USER_ID`      | -       | Zepp Life user id                   |
+| `APP_ZEPP_LIFE_EMAIL`        | -       | Zepp Life account email address     |
 | `SERVER_PORT`                | 8080    | Server port                         |
 | `SPRING_DATASOURCE_URL`      | -       | JDBC URL of the PostgreSQL database |
 | `SPRING_DATASOURCE_USERNAME` | -       | Database username                   |
