@@ -74,7 +74,7 @@ paths:
         - name: to
           in: query
           description: >-
-            Defaults to today
+            Defaults to today (UTC)
           required: false
           schema:
             type: string

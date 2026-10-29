@@ -7,7 +7,6 @@ import dev.nasenov.miscale2pg.exception.ZeppLifeException;
 import dev.nasenov.miscale2pg.service.MeasurementService;
 import dev.nasenov.miscale2pg.service.ZeppLifeService;
 import jakarta.validation.Validator;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-import tools.jackson.databind.exc.MismatchedInputException;
-import tools.jackson.dataformat.csv.CsvReadException;
 
 @Slf4j
 @RestController
@@ -62,8 +59,7 @@ public class MeasurementController {
 
   @PostMapping("/sync")
   public ResponseEntity<?> sync(
-      @RequestParam Optional<LocalDate> from, @RequestParam Optional<LocalDate> to)
-      throws IOException {
+      @RequestParam Optional<LocalDate> from, @RequestParam Optional<LocalDate> to) {
     MeasurementSync measurementSync = buildMeasurementSync(from, to);
 
     List<MeasurementViolation> violations =
@@ -100,13 +96,6 @@ public class MeasurementController {
         HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
   }
 
-  @ExceptionHandler({CsvReadException.class, MismatchedInputException.class, IOException.class})
-  public ProblemDetail handleFileException(Exception ex) {
-    log.error("Failed to read file", ex);
-    return ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_DETAIL);
-  }
-
   @ExceptionHandler(DataAccessException.class)
   public ProblemDetail handleDataAccessException(DataAccessException ex) {
     log.error("Database exception", ex);
@@ -127,7 +116,7 @@ public class MeasurementController {
   }
 
   private MeasurementSync buildMeasurementSync(Optional<LocalDate> from, Optional<LocalDate> to) {
-    LocalDate effectiveTo = to.orElseGet(LocalDate::now);
+    LocalDate effectiveTo = to.orElseGet(() -> LocalDate.now(ZoneOffset.UTC));
     LocalDate effectiveFrom =
         from.orElseGet(
             () ->

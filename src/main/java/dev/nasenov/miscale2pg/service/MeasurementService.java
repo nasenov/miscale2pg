@@ -7,7 +7,7 @@ import dev.nasenov.miscale2pg.dto.ZeppLifeMeasurementExport;
 import dev.nasenov.miscale2pg.model.Measurement;
 import dev.nasenov.miscale2pg.repository.MeasurementRepository;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class MeasurementService {
     return measurementRepository
         .findLatest()
         .map(Measurement::time)
-        .map(OffsetDateTime::toLocalDate);
+        .map(time -> time.withOffsetSameInstant(ZoneOffset.UTC).toLocalDate());
   }
 
   @Transactional

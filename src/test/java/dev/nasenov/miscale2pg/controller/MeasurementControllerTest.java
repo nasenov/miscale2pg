@@ -5,7 +5,6 @@ import static org.mockito.Mockito.doThrow;
 
 import dev.nasenov.miscale2pg.service.MeasurementService;
 import dev.nasenov.miscale2pg.service.ZeppLifeService;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ class MeasurementControllerTest {
   @Autowired MockMvcTester mockMvcTester;
 
   @Test
-  void shouldReturnInternalServerErrorWhenDBExceptionIsThrown() throws IOException {
+  void shouldReturnInternalServerErrorWhenDBExceptionIsThrown() {
     doThrow(DataIntegrityViolationException.class).when(zeppLifeService).sync(any());
 
     mockMvcTester

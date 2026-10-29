@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.databind.ObjectReader;
 
@@ -74,7 +75,7 @@ public class ZeppLifeService {
 
   private final MeasurementService measurementService;
 
-  public void sync(MeasurementSync measurementSync) throws IOException {
+  public void sync(MeasurementSync measurementSync) {
     String task =
         zeppLifeRestClient
             .post()
@@ -138,7 +139,7 @@ public class ZeppLifeService {
     return export;
   }
 
-  private ZeppLifeMeasurementExport readExport(byte[] zip, String password) throws IOException {
+  private ZeppLifeMeasurementExport readExport(byte[] zip, String password) {
     List<ZeppLifeMeasurementCsv> csvs = new ArrayList<>();
 
     try (ZipInputStream zipInputStream =
@@ -152,6 +153,8 @@ public class ZeppLifeService {
           }
         }
       }
+    } catch (IOException | JacksonException ex) {
+      throw new ZeppLifeExportInvalidException(ex);
     }
 
     return ZeppLifeMeasurementExport.of(csvs);
