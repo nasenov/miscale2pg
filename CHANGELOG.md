@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/nasenov/miscale2pg/compare/0.4.0...0.4.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.17 ➔ 1.1.18) ([#107](https://github.com/nasenov/miscale2pg/issues/107)) ([8b5f5c7](https://github.com/nasenov/miscale2pg/commit/8b5f5c748380d39fcc626c3f0accb919108633fe))
+
+
+### Continuous Integration
+
+* **github-action:** update action renovatebot/github-action (v46.3.10 ➔ v46.3.11) ([#109](https://github.com/nasenov/miscale2pg/issues/109)) ([3335868](https://github.com/nasenov/miscale2pg/commit/3335868d50f148f5e1f1916ce9e30b7e157551a3))
+
 ## [0.4.0](https://github.com/nasenov/miscale2pg/compare/0.3.3...0.4.0) (2026-10-29)
 
 
