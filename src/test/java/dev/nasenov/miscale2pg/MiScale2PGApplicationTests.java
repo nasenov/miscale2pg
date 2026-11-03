@@ -185,13 +185,12 @@ class MiScale2PGApplicationTests {
 
       restTestClient
           .post()
-          .uri(
-              uriBuilder ->
-                  uriBuilder
-                      .path("/api/measurements/sync")
-                      .queryParam("from", "2026-08-16")
-                      .queryParam("to", "2026-08-23")
-                      .build())
+          .uri(uriBuilder ->
+              uriBuilder
+                  .path("/api/measurements/sync")
+                  .queryParam("from", "2026-08-16")
+                  .queryParam("to", "2026-08-23")
+                  .build())
           .exchange()
           .expectStatus()
           .isOk()
@@ -221,13 +220,12 @@ class MiScale2PGApplicationTests {
               .build();
 
       Stream.of(completeMeasurement, partialMeasurement)
-          .forEach(
-              measurement ->
-                  assertThat(measurementRepository.findById(measurement.time()))
-                      .isPresent()
-                      .get()
-                      .usingRecursiveComparison()
-                      .isEqualTo(measurement));
+          .forEach(measurement ->
+              assertThat(measurementRepository.findById(measurement.time()))
+                  .isPresent()
+                  .get()
+                  .usingRecursiveComparison()
+                  .isEqualTo(measurement));
 
       mockServerClient.reset();
     }
@@ -253,11 +251,10 @@ class MiScale2PGApplicationTests {
 
     List<ZeppLifeMeasurement> zeppLifeMeasurements = List.of(valid, invalid);
 
-    assertThatThrownBy(
-            () ->
-                measurementService.save(
-                    ZeppLifeMeasurementExport.of(
-                        List.of(ZeppLifeMeasurementCsv.of(zeppLifeMeasurements)))))
+    assertThatThrownBy(() ->
+            measurementService.save(
+                ZeppLifeMeasurementExport.of(
+                    List.of(ZeppLifeMeasurementCsv.of(zeppLifeMeasurements)))))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThat(measurementRepository.findById(valid.time())).isNotPresent();
   }
@@ -334,24 +331,22 @@ class MiScale2PGApplicationTests {
 
     restTestClient
         .get()
-        .uri(
-            uriBuilder ->
-                uriBuilder
-                    .path("/api/measurements")
-                    .queryParam("from", OffsetDateTime.parse("2026-06-29T12:00:00Z"))
-                    .queryParam("to", OffsetDateTime.parse("2026-06-30T12:00:00Z"))
-                    .build())
+        .uri(uriBuilder ->
+            uriBuilder
+                .path("/api/measurements")
+                .queryParam("from", OffsetDateTime.parse("2026-06-29T12:00:00Z"))
+                .queryParam("to", OffsetDateTime.parse("2026-06-30T12:00:00Z"))
+                .build())
         .exchangeSuccessfully()
         .expectStatus()
         .isOk()
         .expectBody(new ParameterizedTypeReference<List<MeasurementResponse>>() {})
-        .consumeWith(
-            result -> {
-              List<MeasurementResponse> measurements = result.getResponseBody();
+        .consumeWith(result -> {
+          List<MeasurementResponse> measurements = result.getResponseBody();
 
-              assertThat(measurements).hasSize(1);
-              assertThat(measurements.getFirst()).isEqualTo(expected);
-            });
+          assertThat(measurements).hasSize(1);
+          assertThat(measurements.getFirst()).isEqualTo(expected);
+        });
   }
 
   @Test
@@ -411,13 +406,12 @@ class MiScale2PGApplicationTests {
         .expectStatus()
         .isOk()
         .expectBody(new ParameterizedTypeReference<List<MeasurementResponse>>() {})
-        .consumeWith(
-            result -> {
-              List<MeasurementResponse> measurements = result.getResponseBody();
+        .consumeWith(result -> {
+          List<MeasurementResponse> measurements = result.getResponseBody();
 
-              assertThat(measurements).hasSize(1);
-              assertThat(measurements.getFirst()).isEqualTo(expected);
-            });
+          assertThat(measurements).hasSize(1);
+          assertThat(measurements.getFirst()).isEqualTo(expected);
+        });
   }
 
   private static byte[] createZip(String csv) throws IOException {
