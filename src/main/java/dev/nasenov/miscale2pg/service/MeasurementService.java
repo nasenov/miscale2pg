@@ -37,10 +37,9 @@ public class MeasurementService {
   public void save(ZeppLifeMeasurementExport zeppLifeMeasurementExport) {
     zeppLifeMeasurementExport
         .csvs()
-        .forEach(
-            csv ->
-                measurementRepository.saveAll(
-                    csv.measurements().stream().map(MeasurementService::convert).toList()));
+        .forEach(csv ->
+            measurementRepository.saveAll(
+                csv.measurements().stream().map(MeasurementService::convert).toList()));
   }
 
   private static MeasurementResponse convert(Measurement measurement) {

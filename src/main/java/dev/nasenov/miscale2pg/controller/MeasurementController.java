@@ -106,10 +106,9 @@ public class MeasurementController {
   private MeasurementTimeRange buildMeasurementTimeRange(
       Optional<OffsetDateTime> from, Optional<OffsetDateTime> to) {
     OffsetDateTime effectiveTo =
-        to.orElseGet(
-            () ->
-                from.map(effectiveFrom -> effectiveFrom.plusDays(30))
-                    .orElseGet(() -> OffsetDateTime.now(ZoneOffset.UTC)));
+        to.orElseGet(() ->
+            from.map(effectiveFrom -> effectiveFrom.plusDays(30))
+                .orElseGet(() -> OffsetDateTime.now(ZoneOffset.UTC)));
     OffsetDateTime effectiveFrom = from.orElseGet(() -> effectiveTo.minusDays(30));
 
     return MeasurementTimeRange.of(effectiveFrom, effectiveTo);
@@ -118,11 +117,10 @@ public class MeasurementController {
   private MeasurementSync buildMeasurementSync(Optional<LocalDate> from, Optional<LocalDate> to) {
     LocalDate effectiveTo = to.orElseGet(() -> LocalDate.now(ZoneOffset.UTC));
     LocalDate effectiveFrom =
-        from.orElseGet(
-            () ->
-                measurementService
-                    .findLatestMeasurementDate()
-                    .orElseGet(() -> effectiveTo.minusDays(30)));
+        from.orElseGet(() ->
+            measurementService
+                .findLatestMeasurementDate()
+                .orElseGet(() -> effectiveTo.minusDays(30)));
 
     return MeasurementSync.of(effectiveFrom, effectiveTo);
   }
