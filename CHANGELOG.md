@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.5.0](https://github.com/nasenov/miscale2pg/compare/0.4.0...0.5.0) (2026-11-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **github-action:** Update action renovatebot/github-action (v47.0.0 ➔ v48.0.0) ([#132](https://github.com/nasenov/miscale2pg/issues/132))
+* **github-action:** Update action renovatebot/github-action (v46.3.15 ➔ v47.0.0) ([#130](https://github.com/nasenov/miscale2pg/issues/130))
+* **container:** Update image postgres (18.7 ➔ 19.0) ([#125](https://github.com/nasenov/miscale2pg/issues/125))
+
+### Features
+
+* **container:** update image postgres (18.6 ➔ 18.7) ([#117](https://github.com/nasenov/miscale2pg/issues/117)) ([169e696](https://github.com/nasenov/miscale2pg/commit/169e696a13d888f9e77ef539151e444897f7bc6e))
+* **container:** Update image postgres (18.7 ➔ 19.0) ([#125](https://github.com/nasenov/miscale2pg/issues/125)) ([b9518ec](https://github.com/nasenov/miscale2pg/commit/b9518ec749563fc98d162d9d8844fdf4129841e7))
+* **deps:** update dependency org.mock-server:mockserver-client-java (9.2.0 ➔ 9.3.0) ([#118](https://github.com/nasenov/miscale2pg/issues/118)) ([facdcb3](https://github.com/nasenov/miscale2pg/commit/facdcb3f3eb9cd837913307d378b28e12ad4b4a5))
+* **deps:** update dependency org.mock-server:mockserver-client-java (9.3.0 ➔ 9.4.0) ([#126](https://github.com/nasenov/miscale2pg/issues/126)) ([60abfe6](https://github.com/nasenov/miscale2pg/commit/60abfe6a464b092780d80532766596175c3cb4e5))
+* **deps:** update plugin com.diffplug.spotless (8.10.4 ➔ 8.11.0) ([#111](https://github.com/nasenov/miscale2pg/issues/111)) ([57af153](https://github.com/nasenov/miscale2pg/commit/57af1537db4c3fbbafb050f4d7e78643534b0c23))
+* **deps:** update plugin com.diffplug.spotless (8.11.0 ➔ 8.12.0) ([#127](https://github.com/nasenov/miscale2pg/issues/127)) ([d2eaf4c](https://github.com/nasenov/miscale2pg/commit/d2eaf4c91512d43c082405b670e393821c30cea0))
+* **deps:** update plugin org.springframework.boot (4.1.2 ➔ 4.2.0) ([#123](https://github.com/nasenov/miscale2pg/issues/123)) ([848ed47](https://github.com/nasenov/miscale2pg/commit/848ed4767f21bdd48ef39042399eeb0a2a9e57fc))
+
+
+### Bug Fixes
+
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.17 ➔ 1.1.18) ([#107](https://github.com/nasenov/miscale2pg/issues/107)) ([8b5f5c7](https://github.com/nasenov/miscale2pg/commit/8b5f5c748380d39fcc626c3f0accb919108633fe))
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.18 ➔ 1.1.19) ([#120](https://github.com/nasenov/miscale2pg/issues/120)) ([2385e86](https://github.com/nasenov/miscale2pg/commit/2385e862c9f36d59e81a79a3e61555df7d404a5a))
+* **deps:** update plugin org.graalvm.buildtools.native (1.1.19 ➔ 1.1.20) ([#129](https://github.com/nasenov/miscale2pg/issues/129)) ([6875ab8](https://github.com/nasenov/miscale2pg/commit/6875ab823513421b9a0ec5459fc703ceb9ac0d76))
+
+
+### Build System
+
+* **gradle:** update gradle (9.8.2 ➔ 9.9.0) ([#113](https://github.com/nasenov/miscale2pg/issues/113)) ([783474f](https://github.com/nasenov/miscale2pg/commit/783474f8189d996c969b66b856230bc9565465eb))
+* **gradle:** update gradle (9.9.0 ➔ 9.9.1) ([#115](https://github.com/nasenov/miscale2pg/issues/115)) ([6690cd0](https://github.com/nasenov/miscale2pg/commit/6690cd0bb8a70223064eb46fd38dc81764c69e27))
+* **gradle:** update gradle (9.9.1 ➔ 9.9.2) ([#124](https://github.com/nasenov/miscale2pg/issues/124)) ([722d932](https://github.com/nasenov/miscale2pg/commit/722d932aae6c4b0451ec59e686e14fcfe9d28b54))
+* **gradle:** update gradle (9.9.2 ➔ 9.9.3) ([#131](https://github.com/nasenov/miscale2pg/issues/131)) ([ffd6d9d](https://github.com/nasenov/miscale2pg/commit/ffd6d9d27a140ad627d67cbe52d386fc26e489fe))
+
+
+### Continuous Integration
+
+* **github-action:** update action actions/create-github-app-token (v3.3.0 ➔ v3.4.0) ([#122](https://github.com/nasenov/miscale2pg/issues/122)) ([48f7ee1](https://github.com/nasenov/miscale2pg/commit/48f7ee13d84045f7ec331df63a8774d422b78d93))
+* **github-action:** update action docker/login-action (v4.7.0 ➔ v4.8.0) ([#112](https://github.com/nasenov/miscale2pg/issues/112)) ([3045fcf](https://github.com/nasenov/miscale2pg/commit/3045fcf2535b7aed619c0dcbfaf1b542f16e3927))
+* **github-action:** update action graalvm/setup-graalvm (v1.6.8 ➔ v1.6.9) ([#116](https://github.com/nasenov/miscale2pg/issues/116)) ([a35b663](https://github.com/nasenov/miscale2pg/commit/a35b6630ada184e8afc0038586563a06bc763a4a))
+* **github-action:** update action graalvm/setup-graalvm (v1.6.9 ➔ v1.6.10) ([#121](https://github.com/nasenov/miscale2pg/issues/121)) ([32c8d25](https://github.com/nasenov/miscale2pg/commit/32c8d25c3a06c2c1cbe96b13a787617f435f1bf0))
+* **github-action:** update action renovatebot/github-action (v46.3.10 ➔ v46.3.11) ([#109](https://github.com/nasenov/miscale2pg/issues/109)) ([3335868](https://github.com/nasenov/miscale2pg/commit/3335868d50f148f5e1f1916ce9e30b7e157551a3))
+* **github-action:** update action renovatebot/github-action (v46.3.11 ➔ v46.3.12) ([#110](https://github.com/nasenov/miscale2pg/issues/110)) ([df50b41](https://github.com/nasenov/miscale2pg/commit/df50b411cb4bb14788eaba29893b5b034f1f5da5))
+* **github-action:** update action renovatebot/github-action (v46.3.12 ➔ v46.3.13) ([#114](https://github.com/nasenov/miscale2pg/issues/114)) ([c8c2317](https://github.com/nasenov/miscale2pg/commit/c8c2317a4282d2eb48030325bbab746164aadb66))
+* **github-action:** update action renovatebot/github-action (v46.3.13 ➔ v46.3.14) ([#119](https://github.com/nasenov/miscale2pg/issues/119)) ([11537a2](https://github.com/nasenov/miscale2pg/commit/11537a2b7c45da092df70f08be434a6a927cfb21))
+* **github-action:** update action renovatebot/github-action (v46.3.14 ➔ v46.3.15) ([#128](https://github.com/nasenov/miscale2pg/issues/128)) ([37eb085](https://github.com/nasenov/miscale2pg/commit/37eb085d47b763577b2bcdc056cac3f2ddc28b44))
+* **github-action:** Update action renovatebot/github-action (v46.3.15 ➔ v47.0.0) ([#130](https://github.com/nasenov/miscale2pg/issues/130)) ([d85ac7d](https://github.com/nasenov/miscale2pg/commit/d85ac7d6c09bbee60b5b5b0e320c9bab8b85a33e))
+* **github-action:** Update action renovatebot/github-action (v47.0.0 ➔ v48.0.0) ([#132](https://github.com/nasenov/miscale2pg/issues/132)) ([3b6690f](https://github.com/nasenov/miscale2pg/commit/3b6690f5a9f1cb32294532f52dcaeda9345f0d79))
+* speed up CI by using gradle cache and parallel jobs ([60cbce5](https://github.com/nasenov/miscale2pg/commit/60cbce53ad693fd8a8f8717cf436c95050a8fb8d))
+
+
+### Miscellaneous Chores
+
+* update renovete changelogs rules ([945b401](https://github.com/nasenov/miscale2pg/commit/945b401def2f87a6e518ec557aac90a7a37bac87))
+
 ## [0.4.0](https://github.com/nasenov/miscale2pg/compare/0.3.3...0.4.0) (2026-10-29)
 
 
